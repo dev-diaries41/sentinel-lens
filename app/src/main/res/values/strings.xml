@@ -1,0 +1,70 @@
+<resources>
+    <!-- About -->
+    <string name="app_name">Sentinel Lens</string>
+    <string name="copyright">© 2025 D41 Dev</string>
+    <string name="source_code_url">https://github.com/dev-diaries41/smartscan</string>
+
+    <!--Screens-->
+    <string name="title_face_id">Test Face Id</string>
+    <string name="title_surveillance">Surveillance</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_watchlist">Watchlist</string>
+    <string name="title_add_person">Add Person</string>
+    <string name="title_donate">Donate</string>
+
+    <!--Error Messages-->
+    <string name="error_watchlist_not_setup_message">Set up your watchlist</string>
+
+    <!--Surveillance Screen-->
+    <string name="surveillance_notice_message">Start facial recognition surveillance now and get alerts when unauthorised people are detected.</string>
+
+    <!--Faces screen -->
+    <string name="no_entries">Empty Watchlist</string>
+    <string name="no_entries_description">Upload a photo to add someone to your Watchlist. Face detection happens automatically.</string>
+
+    <!-- Donate screen -->
+    <string name="label_btc">Bitcoin</string>
+    <string name="label_eth">Ethereum</string>
+    <string name="label_ltc">Litecoin</string>
+    <string name="btc_wallet">bc1qw46nxjp5gkh460ewamjd3jfeu0xv6ytq5et6xm</string>
+    <string name="eth_wallet">0xa53aC18B25942C71019f85314AF67F6132E525ad</string>
+    <string name="ltc_wallet">ltc1q2hspfea9rw5j2ymvv22hx7dmckh8c99sqk7av3</string>
+
+    <!-- Settings-related strings -->
+    <string name="facial_recognition_settings">Facial Recognition</string>
+    <string name="setting_surveillance_mode">Mode</string>
+    <string name="setting_blacklist">Blacklist</string>
+    <string name="setting_blacklist_description">Add images of images unauthorised people.</string>
+    <string name="setting_whitelist">Whitelist</string>
+    <string name="setting_whitelist_description">Add images of authorised people.</string>
+    <string name="setting_similarity_threshold">Similarity threshold</string>
+    <string name="setting_similarity_threshold_description">Minimum similarity score for matching. Lower values risk false positives; higher values may miss matches.</string>
+
+    <string name="video_settings">Video</string>
+    <string name="setting_frame_interval">Frame interval</string>
+    <string name="setting_camera_type">Camera type</string>
+    <string name="setting_camera_type_description">Front or back camera.</string>
+    <string name="setting_frame_interval_description">Interval for face detection in each frame.</string>
+    <string name="setting_max_duration">Max duration</string>
+    <string name="setting_max_duration_description">Maximum surveillance duration. `No limit` runs until manually stopped.</string>
+
+    <string name="alert_settings">Alerts</string>
+    <string name="setting_alert_frequency">Alert frequency</string>
+    <string name="setting_alert_frequency_description">Time interval between each detection for alerts.</string>
+    <string name="setting_telegram_config">Telegram configuration</string>
+    <string name="setting_telegram_config_description">Bot father token, Channel Id</string>
+
+    <string name="other_settings">Other</string>
+    <string name="setting_source_code">Source code</string>
+
+    <!--Notifications-->
+    <string name="sentinellens_general_channel_id">SentinelLensChannel</string>
+    <string name="sentinellens_general_channel_name">Sentinel Lens General Notifications</string>
+    <string name="surveillance_foreground_channel_id">SurveillanceServiceChannel</string>
+    <string name="surveillance_foreground_channel_name">Surveillance Foreground Notifications</string>
+    <string name="notif_surveillance_foreground_title">Surveillance is live</string>
+    <string name="notif_surveillance_foreground_content">Camera is recording video in foreground</string>
+    <string name="notif_detection_title">Unauthorized person detected</string>
+    <string name="notif_detection_content">Configure telegram in settings to receive telegram alerts instead.</string>
+
+</resources>
