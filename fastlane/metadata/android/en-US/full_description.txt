@@ -1,0 +1,22 @@
+<b>Sentinel Lens</b> is a facial recognition surveillance app that uses your Android device's camera to record video in the background (with no live preview) and sends <b>Telegram alerts</b> when unauthorized individuals are detected, based on a configurable <b>blacklist</b> and <b>whitelist</b>.
+
+<b>Key Features</b>
+
+<b>Background Recording</b>  
+<ul>
+  <li><b>Discreet Capture:</b> Record video silently in the background without any visible camera preview.</li>
+  <li><b>Saved Camera Footage:</b> Automatically store recordings for later review.</li>
+  <li><b>Front or Back Camera:</b> Choose either camera lens for optimal coverage.</li>
+</ul>
+
+<b>Advanced Facial Recognition</b>  
+<ul>
+  <li><b>Facial Recognition Surveillance:</b> Analyze recorded frames to identify known and unknown faces.</li>
+  <li><b>Configurable Watchlist:</b> Maintain custom blacklist and whitelist entries to control alerts.</li>
+</ul>
+
+<b>Real-Time Alerts</b>  
+<ul>
+  <li><b>Telegram Alert Integration:</b> Send instant notifications via Telegram when a watchlist match is detected.</li>
+</ul>
+
