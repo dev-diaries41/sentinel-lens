@@ -2,13 +2,8 @@
 
 **Sentinel Lens** is a facial recognition surveillance app that sends Telegram alerts when unauthorized individuals are detected, based on a configurable blacklist and whitelist.
 
-<!-- <div align="center">
-  <img src="fastlane/metadata/android/en-US/images/featureGraphic.png" alt="Banner" style="border-radius: 20px;">
-</div>
-
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Screenshot 1" width="200px"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Screenshot 2" width="200px"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Screenshot 3" width="200px"> |
-| --- | --- | --- |
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Screenshot 4" width="200px"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Screenshot 5" width="200px"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" alt="Screenshot 6" width="200px"> | -->
+|<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Screenshot 1" width="200px"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Screenshot 2" width="200px"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Screenshot 3" width="200px"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Screenshot 4" width="200px"> |
+| --- | --- | --- | --- |
 
 ---
 
@@ -52,19 +47,19 @@ Once your Watchlist and Telegram settings are configured, go to the `Surveillanc
 
 ---
 
-<!-- ## Download
+## Download
 
-Download the latest APK from the [Releases](https://github.com/dev-diaries41/smartscan/releases/latest) page. -->
+Download the latest APK from the [Releases](https://github.com/dev-diaries41/sentinel-lens/releases/latest) page.
 
-<!-- 
-<div style="display: flex; gap: 10px;">
+
+<!-- <div style="display: flex; gap: 10px;">
   <a href="https://f-droid.org/en/docs/Badges/" style="text-decoration: none;">
     <img src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid" style="max-width:100%;" width=200>
   </a>
-</div>
--->
+</div> -->
 
 ---
+
 
 ## Support the Project
 
