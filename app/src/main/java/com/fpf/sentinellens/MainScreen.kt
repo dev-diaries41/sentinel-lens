@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Science
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.fpf.sentinellens.ui.screens.donate.DonateScreen
 import com.fpf.sentinellens.ui.screens.person.AddPersonScreen
 import com.fpf.sentinellens.ui.screens.watchlist.WatchlistScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsScreen
@@ -100,6 +101,9 @@ fun MainScreen() {
             composable("addPerson") {
                 AddPersonScreen(
                 )
+            }
+            composable("donate") {
+                DonateScreen()
             }
             composable("settings") {
                 SettingsScreen(
