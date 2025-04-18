@@ -2,7 +2,7 @@
     <!-- About -->
     <string name="app_name">Sentinel Lens</string>
     <string name="copyright">© 2025 D41 Dev</string>
-    <string name="source_code_url">https://github.com/dev-diaries41/smartscan</string>
+    <string name="source_code_url">https://github.com/dev-diaries41/sentinel-lens</string>
 
     <!--Screens-->
     <string name="title_face_id">Test Face Id</string>

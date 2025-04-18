@@ -85,7 +85,7 @@ fun <T> SwipeableCard(
             }
 
             Card(
-                elevation = CardDefaults.cardElevation(4.dp),
+//                elevation = CardDefaults.cardElevation(4.dp),
                 modifier = Modifier
                     .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                     .fillMaxWidth()
