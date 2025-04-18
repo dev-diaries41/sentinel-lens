@@ -10,7 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun RequestPermissions(
-    onPermissionsResult: (notificationGranted: Boolean, storageGranted: Boolean, cameraGranted: Boolean) -> Unit
+    onPermissionsResult: (notificationGranted: Boolean, cameraGranted: Boolean) -> Unit
 ) {
     val permissionsToRequest = mutableListOf<String>()
 
@@ -18,10 +18,6 @@ fun RequestPermissions(
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
-    }
-
-    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU) {
-        permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -33,22 +29,16 @@ fun RequestPermissions(
             true
         }
 
-        val storageGranted = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU) {
-            permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] == true
-        } else {
-            true
-        }
-
         val cameraGranted = permissions[Manifest.permission.CAMERA] == true
 
-        onPermissionsResult(notificationGranted, storageGranted, cameraGranted)
+        onPermissionsResult(notificationGranted, cameraGranted)
     }
 
     LaunchedEffect(Unit) {
         if (permissionsToRequest.isNotEmpty()) {
             permissionLauncher.launch(permissionsToRequest.toTypedArray())
         } else {
-            onPermissionsResult(true, true, false)
+            onPermissionsResult(true, false)
         }
     }
 }

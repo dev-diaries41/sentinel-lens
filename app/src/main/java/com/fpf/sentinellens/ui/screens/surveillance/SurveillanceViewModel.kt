@@ -21,7 +21,7 @@ class SurveillanceViewModel(application: Application) : AndroidViewModel(applica
     private val _isSurveillanceActive = MutableLiveData<Boolean>(false)
     val isSurveillanceActive: LiveData<Boolean> = _isSurveillanceActive
 
-    fun checkPermissions(notifications: Boolean, storage: Boolean, camera: Boolean) {
+    fun checkPermissions(notifications: Boolean, camera: Boolean) {
         if ( camera) {
             _hasPermissions.value = true
         }else{

@@ -46,8 +46,8 @@ fun SurveillanceScreen(
     val isSurveillanceActive by viewModel.isSurveillanceActive.observeAsState()
     val scrollState = rememberScrollState()
 
-    RequestPermissions { notificationGranted, storageGranted, cameraGranted ->
-        viewModel.checkPermissions(notificationGranted, storageGranted, cameraGranted)
+    RequestPermissions { notificationGranted, cameraGranted ->
+        viewModel.checkPermissions(notificationGranted, cameraGranted)
     }
 
     Box(
