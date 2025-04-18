@@ -3,6 +3,7 @@ package com.fpf.sentinellens.ui.screens.surveillance
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Intent
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -21,8 +22,10 @@ class SurveillanceViewModel(application: Application) : AndroidViewModel(applica
     val isSurveillanceActive: LiveData<Boolean> = _isSurveillanceActive
 
     fun checkPermissions(notifications: Boolean, storage: Boolean, camera: Boolean) {
-        if (notifications && storage && camera) {
+        if ( camera) {
             _hasPermissions.value = true
+        }else{
+            Toast.makeText(getApplication<Application>(), "Missing camera permission", Toast.LENGTH_SHORT).show()
         }
     }
 

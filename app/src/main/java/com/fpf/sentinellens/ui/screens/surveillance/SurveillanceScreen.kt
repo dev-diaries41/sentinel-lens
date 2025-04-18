@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
@@ -149,15 +150,20 @@ fun RecordButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface (
-        modifier = modifier.padding(16.dp).size(64.dp),
+    val alpha = if (enabled) 1f else 0.5f
+
+    Surface(
+        modifier = modifier
+            .padding(16.dp)
+            .size(64.dp)
+            // fade entire button
+            .alpha(alpha),
         shape = CircleShape,
         color = MaterialTheme.colorScheme.background,
         border = BorderStroke(4.dp, MaterialTheme.colorScheme.onBackground),
         onClick = onClick,
-        enabled = enabled,
+        enabled = enabled
     ) {
-
         val innerShape = if (isRecording) RoundedCornerShape(8.dp) else CircleShape
 
         Box(
@@ -169,6 +175,7 @@ fun RecordButton(
         )
     }
 }
+
 
 
 fun Modifier.cornerOnlyBorder(
