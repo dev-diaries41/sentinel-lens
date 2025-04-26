@@ -124,7 +124,7 @@ class VideoCaptureListener(
             // Whitelist is prone to false detection so multiple detections reduce false positives
             if(bestWhiteListMatch != -1f && bestWhiteListMatch < threshold){
                 numDetections++
-                if(numDetections >= 2){
+                if(numDetections >= 3){
                     detectedUnauthorisedPerson = true
                     numDetections = 0
                 }
