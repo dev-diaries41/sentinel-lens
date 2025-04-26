@@ -33,7 +33,7 @@
     <!-- Settings-related strings -->
     <string name="facial_recognition_settings">Facial Recognition</string>
     <string name="setting_surveillance_mode">Mode</string>
-    <string name="setting_mode_description">Sets detection mode. Whitelist mode is prone to more false detections.</string>
+    <string name="setting_mode_description">Sets detection mode. In whitelist mode, approved individuals may be misclassified.</string>
     <string name="setting_similarity_threshold">Similarity threshold</string>
     <string name="setting_similarity_threshold_description">Minimum similarity score for matching. Lower values risk false positives; higher values may miss matches.</string>
 
