@@ -117,7 +117,6 @@ class VideoCaptureListener(
                 val similarity = whitelistSimilarities[bestIndex]
                 if(similarity > bestWhiteListMatch){
                     bestWhiteListMatch = similarity
-                    unauthorisedPersonName = whiteList!![bestIndex].name
                 }
             }
             // This means the detected person is not whitelisted
