@@ -39,7 +39,7 @@ fun SettingsDetailScreen(
             when (type) {
                 "threshold" -> {
                     CustomSlider(
-                        minValue = 0.5f,
+                        minValue = 0f,
                         maxValue = 0.8f,
                         initialValue = appSettings.similarityThreshold,
                         onValueChange = { value ->
