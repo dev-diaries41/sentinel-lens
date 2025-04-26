@@ -40,6 +40,7 @@ class VideoCaptureListener(
     private var blackList: List<Face>? = null
     private var whiteList: List<Face>? = null
     private var lastDetectionTime: Long = 0L
+    private var numDetections: Int = 0
 
     companion object {
         private const val TAG = "VideoCaptureListener"
@@ -120,8 +121,16 @@ class VideoCaptureListener(
                 }
             }
             // This means the detected person is not whitelisted
+            // Whitelist is prone to false detection so multiple detections reduce false positives
             if(bestWhiteListMatch != -1f && bestWhiteListMatch < threshold){
-                detectedUnauthorisedPerson = true
+                numDetections++
+                if(numDetections >= 2){
+                    detectedUnauthorisedPerson = true
+                    numDetections = 0
+                }
+            }else{
+                // A whitelisted person was accurately detected so recent
+                numDetections = 0
             }
         }
 
