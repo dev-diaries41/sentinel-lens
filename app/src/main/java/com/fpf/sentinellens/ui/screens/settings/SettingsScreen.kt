@@ -65,6 +65,7 @@ fun SettingsScreen(
                             ?.key ?: modeOptions.keys.first()
                         viewModel.updateMode(selected)
                     },
+                    description = stringResource(id = R.string.setting_mode_description)
                 )
 
                 SettingsCard(

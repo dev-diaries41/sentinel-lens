@@ -43,8 +43,6 @@ fun MainScreen() {
         currentRoute == "addPerson" -> stringResource(R.string.title_add_person)
         currentRoute == "surveillance" -> stringResource(R.string.title_surveillance)
         currentRoute?.startsWith("settingsDetail") == true -> when (typeVal) {
-            "whitelist" -> stringResource(R.string.setting_whitelist)
-            "blacklist" -> stringResource(R.string.setting_blacklist)
             "threshold" -> stringResource(R.string.setting_similarity_threshold)
             "telegram" -> stringResource(R.string.setting_telegram_config)
             else -> ""
