@@ -51,12 +51,11 @@ Once your Watchlist and Telegram settings are configured, go to the `Surveillanc
 
 Download the latest APK from the [Releases](https://github.com/dev-diaries41/sentinel-lens/releases/latest) page.
 
-
-<!-- <div style="display: flex; gap: 10px;">
-  <a href="https://f-droid.org/en/docs/Badges/" style="text-decoration: none;">
-    <img src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid" style="max-width:100%;" width=200>
+<div style="display: flex; gap: 10px;">
+  <a href="https://f-droid.org/packages/com.fpf.sentinellens" style="text-decoration: none;">
+  <img src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid" style="max-width:100%;" width=200>
   </a>
-</div> -->
+</div>
 
 ---
 
