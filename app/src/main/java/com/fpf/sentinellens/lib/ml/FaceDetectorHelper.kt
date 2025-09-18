@@ -1,143 +1,104 @@
 package com.fpf.sentinellens.lib.ml
 
 import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.util.Log
-import android. graphics.Paint
-import com.fpf.sentinellens.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import java.util.Collections
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.system.measureTimeMillis
 import androidx.core.graphics.scale
+import com.fpf.smartscansdk.core.ml.models.FileOnnxLoader
+import com.fpf.smartscansdk.core.ml.models.FilePath
+import com.fpf.smartscansdk.core.ml.models.ModelSource
+import com.fpf.smartscansdk.core.ml.models.OnnxModel
+import com.fpf.smartscansdk.core.ml.models.ResourceId
+import com.fpf.smartscansdk.core.ml.models.ResourceOnnxLoader
 import java.nio.ByteBuffer
 
-class FaceDetectorHelper(resources: Resources) {
-    private var ortEnv: OrtEnvironment = OrtEnvironment.getEnvironment()
-    private var session: OrtSession? = null
+interface IDetectionProvider<T> {
+    fun closeSession() = Unit
+    suspend fun detect(data: T): Pair<List<Float>, List<FloatArray>>
+}
+
+typealias FaceDetectorProvider = IDetectionProvider<Bitmap>
+
+class FaceDetectorHelper(
+    resources: Resources,
+    modelSource: ModelSource,
+) : FaceDetectorProvider {
+    private val model: OnnxModel = when(modelSource){
+        is FilePath -> OnnxModel(FileOnnxLoader(modelSource.path))
+        is ResourceId -> OnnxModel(ResourceOnnxLoader(resources, modelSource.resId))
+    }
 
     companion object {
-        private const val TAG = "FaceComparisonHelper"
+        private const val TAG = "FaceDetectorHelper"
         private const val CONF_THRESHOLD = 0.5f
         private const val NMS_THRESHOLD = 0.3f
     }
 
-    init {
-        session = loadModel(resources, R.raw.face_detect)
-    }
+    suspend fun initialize() = model.loadModel()
 
-    private fun loadModel(resources: Resources, resourceId: Int): OrtSession {
-        lateinit var session: OrtSession
-        val timeTaken = measureTimeMillis {
-            val modelBytes = resources.openRawResource(resourceId).readBytes()
-            session = ortEnv.createSession(modelBytes)
-        }
-        Log.i(TAG, "Face detection model loaded in ${timeTaken}ms")
-        return session
-    }
+    fun isInitialized() = model.isLoaded()
 
-    suspend fun detectFaces(bitmap: Bitmap): Pair<List<Float>, List<FloatArray>> =
+    private var closed = false
+
+    override suspend fun detect(bitmap: Bitmap): Pair<List<Float>, List<FloatArray>> =
         withContext(Dispatchers.Default) {
-            // Ensure the session is loaded.
-            val session = session ?: throw IllegalStateException("Model not loaded")
             val startTime = System.currentTimeMillis()
             val inputShape = longArrayOf(1, 3, 240, 320)
-            val inputName = session.inputNames.iterator().next()
             val imgData: FloatBuffer = preprocessImg(bitmap)
 
-            OnnxTensor.createTensor(ortEnv, imgData, inputShape).use { inputTensor ->
-                session.run(Collections.singletonMap(inputName, inputTensor)).use { outputs ->
-                    @Suppress("UNCHECKED_CAST")
-                    val scoresRawFull = outputs[0].value as Array<Array<FloatArray>>
-                    @Suppress("UNCHECKED_CAST")
-                    val boxesRawFull = outputs[1].value as Array<Array<FloatArray>>
+            OnnxTensor.createTensor(model.getEnv(), imgData, inputShape).use { inputTensor ->
+                val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
+                val outputs = model.run(mapOf(inputName to inputTensor))
+                val outputList = outputs.values.toList()
+                @Suppress("UNCHECKED_CAST")
+                val scoresRawFull  = outputList[0] as Array<Array<FloatArray>>
+                @Suppress("UNCHECKED_CAST")
+                val boxesRawFull = outputList[1] as Array<Array<FloatArray>>
 
-                    // Extract the first element (batch dimension)
-                    val scoresRaw = scoresRawFull[0]  // shape: [num_boxes, 2]
-                    val boxesRaw = boxesRawFull[0]    // shape: [num_boxes, 4]
+                // Extract the first element (batch dimension)
+                val scoresRaw = scoresRawFull[0]  // shape: [num_boxes, 2]
+                val boxesRaw = boxesRawFull[0]    // shape: [num_boxes, 4]
 
-                    val imgWidth = bitmap.width
-                    val imgHeight = bitmap.height
+                val imgWidth = bitmap.width
+                val imgHeight = bitmap.height
 
-                    val boxesList = mutableListOf<FloatArray>()
-                    val scoresList = mutableListOf<Float>()
-                    for (i in scoresRaw.indices) {
-                        val faceScore = scoresRaw[i][1]
-                        if (faceScore > CONF_THRESHOLD) {
-                            val box = boxesRaw[i]
-                            // Box values are normalized; convert to absolute pixel coordinates.
-                            val x1 = box[0] * imgWidth
-                            val y1 = box[1] * imgHeight
-                            val x2 = box[2] * imgWidth
-                            val y2 = box[3] * imgHeight
-                            boxesList.add(floatArrayOf(x1, y1, x2, y2))
-                            scoresList.add(faceScore)
-                        }
+                val boxesList = mutableListOf<FloatArray>()
+                val scoresList = mutableListOf<Float>()
+                for (i in scoresRaw.indices) {
+                    val faceScore = scoresRaw[i][1]
+                    if (faceScore > CONF_THRESHOLD) {
+                        val box = boxesRaw[i]
+                        // Box values are normalized; convert to absolute pixel coordinates.
+                        val x1 = box[0] * imgWidth
+                        val y1 = box[1] * imgHeight
+                        val x2 = box[2] * imgWidth
+                        val y2 = box[3] * imgHeight
+                        boxesList.add(floatArrayOf(x1, y1, x2, y2))
+                        scoresList.add(faceScore)
                     }
+                }
 
-                    val inferenceTime = System.currentTimeMillis() - startTime
-                    Log.d(TAG, "Detection Inference Time: $inferenceTime ms")
+                val inferenceTime = System.currentTimeMillis() - startTime
+                Log.d(TAG, "Detection Inference Time: $inferenceTime ms")
 
-                    // Apply NMS if any detection exists.
-                    if (boxesList.isNotEmpty()) {
-                        val keepIndices = nms(boxesList, scoresList, NMS_THRESHOLD)
-                        val filteredBoxes = keepIndices.map { boxesList[it] }
-                        val filteredScores = keepIndices.map { scoresList[it] }
-                        return@withContext Pair(filteredScores, filteredBoxes)
-                    } else {
-                        return@withContext Pair(emptyList<Float>(), emptyList<FloatArray>())
-                    }
+                // Apply NMS if any detection exists.
+                if (boxesList.isNotEmpty()) {
+                    val keepIndices = nms(boxesList, scoresList, NMS_THRESHOLD)
+                    val filteredBoxes = keepIndices.map { boxesList[it] }
+                    val filteredScores = keepIndices.map { scoresList[it] }
+                    return@withContext Pair(filteredScores, filteredBoxes)
+                } else {
+                    return@withContext Pair(emptyList<Float>(), emptyList<FloatArray>())
                 }
             }
         }
 
-    fun cropFaces(bitmap: Bitmap, boxes: List<FloatArray>): List<Bitmap> {
-        val faces = mutableListOf<Bitmap>()
-        for (box in boxes) {
-            val x1 = max(0, box[0].toInt())
-            val y1 = max(0, box[1].toInt())
-            val x2 = min(bitmap.width, box[2].toInt())
-            val y2 = min(bitmap.height, box[3].toInt())
-            val width = x2 - x1
-            val height = y2 - y1
-            if (width > 0 && height > 0) {
-                val faceBitmap = Bitmap.createBitmap(bitmap, x1, y1, width, height)
-                faces.add(faceBitmap)
-            }
-        }
-        return faces
-    }
-
-    fun drawBoxes(bitmap: Bitmap, boxes: List<FloatArray>, color: Int, strokeWidth: Float = 2f): Bitmap {
-        val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-        val canvas = Canvas(mutableBitmap)
-
-        val paint = Paint().apply {
-            this.color = color
-            this.strokeWidth = strokeWidth
-        }
-
-        for (box in boxes) {
-            val x1 = max(0, box[0].toInt())
-            val y1 = max(0, box[1].toInt())
-            val x2 = min(mutableBitmap.width, box[2].toInt())
-            val y2 = min(mutableBitmap.height, box[3].toInt())
-
-            canvas.drawRect(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat(), paint)
-        }
-
-        return mutableBitmap
-    }
-
-    fun preprocessImg(bitmap: Bitmap): FloatBuffer {
+    private fun preprocessImg(bitmap: Bitmap): FloatBuffer {
         val targetWidth = 320
         val targetHeight = 240
         val resizedBitmap = bitmap.scale(targetWidth, targetHeight)
@@ -181,58 +142,9 @@ class FaceDetectorHelper(resources: Resources) {
         return floatBuffer
     }
 
-
-    /**
-     * Applies Non-Maximum Suppression (NMS) over the list of boxes.
-     * This prevents mutliple similar bounding boxes
-     *
-     * @param boxes A list of boxes, where each box is represented as FloatArray of four values: [x1, y1, x2, y2].
-     * @param scores A list of confidence scores corresponding to each box.
-     * @param iouThreshold The threshold for Intersection-over-Union.
-     * @return A list of indices corresponding to boxes that are kept after NMS.
-     */
-    private fun nms(boxes: List<FloatArray>, scores: List<Float>, iouThreshold: Float): List<Int> {
-        if (boxes.isEmpty()) return emptyList()
-
-        val indices = scores.indices.sortedByDescending { scores[it] }.toMutableList()
-        val keep = mutableListOf<Int>()
-
-        while (indices.isNotEmpty()) {
-            val current = indices.removeAt(0)
-            keep.add(current)
-            val currentBox = boxes[current]
-
-            indices.removeAll { idx ->
-                val iou = computeIoU(currentBox, boxes[idx])
-                iou > iouThreshold
-            }
-        }
-        return keep
+    override fun closeSession() {
+        if (closed) return
+        closed = true
+        (model as? AutoCloseable)?.close()
     }
-
-    /**
-     * Computes the Intersection over Union (IoU) of two boxes.
-     *
-     * @param boxA A box in the format [x1, y1, x2, y2].
-     * @param boxB A box in the format [x1, y1, x2, y2].
-     * @return IoU value.
-     */
-    private fun computeIoU(boxA: FloatArray, boxB: FloatArray): Float {
-        val x1 = max(boxA[0], boxB[0])
-        val y1 = max(boxA[1], boxB[1])
-        val x2 = min(boxA[2], boxB[2])
-        val y2 = min(boxA[3], boxB[3])
-        val intersectionArea = max(0f, x2 - x1) * max(0f, y2 - y1)
-        val areaA = max(0f, boxA[2] - boxA[0]) * max(0f, boxA[3] - boxA[1])
-        val areaB = max(0f, boxB[2] - boxB[0]) * max(0f, boxB[3] - boxB[1])
-        val unionArea = areaA + areaB - intersectionArea
-        return if (unionArea <= 0f) 0f else intersectionArea / unionArea
-    }
-
-
-    fun closeSession() {
-        session?.close()
-        session = null
-    }
-
 }
