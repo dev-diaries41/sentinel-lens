@@ -1,63 +1,79 @@
 package com.fpf.sentinellens.lib.ml
 
 import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
+import android.app.Application
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.util.Log
-import com.fpf.sentinellens.R
 import com.fpf.sentinellens.lib.centerCrop
 import com.fpf.sentinellens.lib.preProcess
+import com.fpf.smartscansdk.core.ml.embeddings.ImageEmbeddingProvider
+import com.fpf.smartscansdk.core.ml.models.FileOnnxLoader
+import com.fpf.smartscansdk.core.ml.models.FilePath
+import com.fpf.smartscansdk.core.ml.models.ModelSource
+import com.fpf.smartscansdk.core.ml.models.OnnxModel
+import com.fpf.smartscansdk.core.ml.models.ResourceId
+import com.fpf.smartscansdk.core.ml.models.ResourceOnnxLoader
+import com.fpf.smartscansdk.core.processors.BatchProcessor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.Collections
-import kotlin.system.measureTimeMillis
 
-class FaceComparisonHelper(resources: Resources) {
-    private var ortEnv: OrtEnvironment = OrtEnvironment.getEnvironment()
-    private var session: OrtSession? = null
-
-    init {
-        session = loadModel(resources, R.raw.inception_resnet_v1_quant)
+class FaceComparisonHelper(
+    resources: Resources,
+    modelSource: ModelSource,
+) : ImageEmbeddingProvider {
+    private val model: OnnxModel = when(modelSource){
+        is FilePath -> OnnxModel(FileOnnxLoader(modelSource.path))
+        is ResourceId -> OnnxModel(ResourceOnnxLoader(resources, modelSource.resId))
     }
 
-    private fun loadModel(resources: Resources, resourceId: Int): OrtSession {
-        lateinit var session: OrtSession
-        val timeTaken = measureTimeMillis {
-            val modelBytes = resources.openRawResource(resourceId).readBytes()
-            session = ortEnv.createSession(modelBytes)
-        }
-        Log.i(TAG, "Face comparison model loaded in ${timeTaken}ms")
-        return session
-    }
-
-    suspend fun generateFaceEmbedding(bitmap: Bitmap): FloatArray =
-        withContext(Dispatchers.Default) {
-            val faceSession = session ?: throw IllegalStateException("Image model not loaded")
-            val processedBitmap = centerCrop(bitmap, 160)
-            val inputShape = longArrayOf(1, 3, 160, 160)
-            val inputName = faceSession.inputNames.iterator().next()
-            val imgData = preProcess(processedBitmap)
-            val startTime = System.currentTimeMillis()
-
-            OnnxTensor.createTensor(ortEnv, imgData, inputShape).use { inputTensor ->
-                faceSession.run(Collections.singletonMap(inputName, inputTensor)).use { output ->
-                    @Suppress("UNCHECKED_CAST")
-                    val inferenceTime = System.currentTimeMillis() - startTime
-                    Log.d(TAG, "Comparison Inference Time: $inferenceTime ms")
-                    val rawOutput = (output[0].value as Array<FloatArray>)[0]
-                    rawOutput // already l2 normalized
-                }
-            }
-        }
-
-    fun closeSession() {
-        session?.close()
-        session = null
-    }
 
     companion object {
         private const val TAG = "FaceComparisonHelper"
+    }
+
+    override val embeddingDim: Int = 512
+    private var closed = false
+
+    suspend fun initialize() = model.loadModel()
+
+    fun isInitialized() = model.isLoaded()
+
+
+    override suspend fun embed(bitmap: Bitmap): FloatArray = withContext(Dispatchers.Default) {
+        if(!isInitialized()) throw IllegalStateException("Model not initialized")
+
+        val processedBitmap = centerCrop(bitmap, 160)
+        val inputShape = longArrayOf(1, 3, 160, 160)
+        val imgData = preProcess(processedBitmap)
+
+        OnnxTensor.createTensor(model.getEnv(), imgData, inputShape).use { inputTensor ->
+            val inputName = model.getInputNames()?.firstOrNull()
+                ?: throw IllegalStateException("Model inputs not available")
+            val output = model.run(mapOf(inputName to inputTensor))
+            (output.values.first() as Array<FloatArray>)[0] // already normalized
+        }
+    }
+
+    suspend fun embedBatch(context: Context, bitmaps: List<Bitmap>): List<FloatArray> {
+        val allEmbeddings = mutableListOf<FloatArray>()
+
+        val processor = object : BatchProcessor<Bitmap, FloatArray>(application = context.applicationContext as Application) {
+            override suspend fun onProcess(context: Context, item: Bitmap): FloatArray {
+                return embed(item)
+            }
+            override suspend fun onBatchComplete(context: Context, batch: List<FloatArray>) {
+                allEmbeddings.addAll(batch)
+            }
+        }
+
+        processor.run(bitmaps)
+        return allEmbeddings
+    }
+
+    override fun closeSession() {
+        if (closed) return
+        closed = true
+        (model as? AutoCloseable)?.close()
     }
 }
