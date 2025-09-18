@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FaceType
@@ -14,14 +15,16 @@ import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.getBitmapFromUri
 import com.fpf.sentinellens.lib.ml.FaceComparisonHelper
 import com.fpf.sentinellens.lib.ml.FaceDetectorHelper
+import com.fpf.sentinellens.lib.ml.cropFaces
 import com.fpf.sentinellens.lib.saveImageLocally
+import com.fpf.smartscansdk.core.ml.models.ResourceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class AddPersonViewModel(application: Application) : AndroidViewModel(application)  {
-    private var faceComparer: FaceComparisonHelper? = null
-    private var faceDetector: FaceDetectorHelper? = null
+    val faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
+    val faceDetector= FaceDetectorHelper(application.resources, ResourceId(R.raw.face_detect))
 
     private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
 
@@ -40,8 +43,8 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
-            faceComparer = FaceComparisonHelper(application.resources)
-            faceDetector= FaceDetectorHelper(application.resources)
+            faceComparer.initialize()
+            faceDetector.initialize()
         }
     }
 
@@ -66,19 +69,19 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
     fun addFace(name: String, newFaceImage: Uri, type: FaceType){
         viewModelScope.launch {
             try {
-                if(faceDetector == null || faceComparer == null){
+                if(!faceDetector.isInitialized() || !faceComparer.isInitialized()){
                     throw IllegalStateException("Models not loaded")
                 }
                 val bitmap = getBitmapFromUri(getApplication(), newFaceImage)
-                val (_, boxes) = faceDetector!!.detectFaces(bitmap)
-                val faces = faceDetector!!.cropFaces(bitmap, boxes)
+                val (_, boxes) = faceDetector.detect(bitmap)
+                val faces = cropFaces(bitmap, boxes)
 
                 if(faces.isEmpty()) {
                     _error.postValue("No faces detected")
                     return@launch
                 }
 
-                val faceEmbeddings = faceComparer!!.generateFaceEmbedding(faces[0])
+                val faceEmbeddings = faceComparer.embed(faces[0])
                 val filePath = "faces/${newFaceImage.toString().hashCode()}.jpg"
                 val saved = saveImageLocally(getApplication(), faces[0], filePath)
 
