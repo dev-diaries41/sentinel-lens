@@ -14,11 +14,14 @@ import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.getBitmapFromUri
 import com.fpf.sentinellens.lib.ml.FaceComparisonHelper
 import com.fpf.sentinellens.lib.ml.FaceDetectorHelper
-import com.fpf.sentinellens.lib.ml.getSimilarities
-import com.fpf.sentinellens.lib.ml.getTopN
+import com.fpf.sentinellens.lib.ml.cropFaces
+import com.fpf.smartscansdk.core.ml.embeddings.getSimilarities
+import com.fpf.smartscansdk.core.ml.embeddings.getTopN
+import com.fpf.smartscansdk.core.ml.models.ResourceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.fpf.sentinellens.R
 
 class TestFaceIdViewModel(application: Application) : AndroidViewModel(application){
     val repository = FacesRepository(FaceDatabase.Companion.getDatabase(application).faceDao())
@@ -44,8 +47,8 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
-            faceComparer = FaceComparisonHelper(application.resources)
-            faceDetector= FaceDetectorHelper(application.resources)
+            faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
+            faceDetector= FaceDetectorHelper(application.resources, ResourceId(R.raw.face_detect))
             _isLoading.postValue(false)
         }
     }
@@ -72,11 +75,11 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
                 val uri = _selectedImage.value ?: return@launch
                 val bitmap = getBitmapFromUri(getApplication(), uri)
 
-                val (_, boxes) = faceDetector!!.detectFaces(bitmap)
-                val faces = faceDetector!!.cropFaces(bitmap, boxes)
+                val (_, boxes) = faceDetector!!.detect(bitmap)
+                val faces = cropFaces(bitmap, boxes)
                 croppedFaces.addAll(faces)
 
-                val faceEmbeddings = croppedFaces.map{faceComparer!!.generateFaceEmbedding(it)}
+                val faceEmbeddings = croppedFaces.map{faceComparer!!.embed(it)}
 
                 if(faceEmbeddings.isEmpty()) {
                     _error.postValue("No faces detected")
