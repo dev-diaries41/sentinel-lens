@@ -1,6 +1,5 @@
 package com.fpf.sentinellens.lib.ml
 
-import ai.onnxruntime.OnnxTensor
 import android.app.Application
 import android.content.Context
 import android.content.res.Resources
@@ -14,6 +13,7 @@ import com.fpf.smartscansdk.core.ml.models.ModelSource
 import com.fpf.smartscansdk.core.ml.models.OnnxModel
 import com.fpf.smartscansdk.core.ml.models.ResourceId
 import com.fpf.smartscansdk.core.ml.models.ResourceOnnxLoader
+import com.fpf.smartscansdk.core.ml.models.TensorData
 import com.fpf.smartscansdk.core.processors.BatchProcessor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,7 +27,6 @@ class FaceComparisonHelper(
         is ResourceId -> OnnxModel(ResourceOnnxLoader(resources, modelSource.resId))
     }
 
-
     companion object {
         private const val TAG = "FaceComparisonHelper"
     }
@@ -39,20 +38,16 @@ class FaceComparisonHelper(
 
     fun isInitialized() = model.isLoaded()
 
-
     override suspend fun embed(bitmap: Bitmap): FloatArray = withContext(Dispatchers.Default) {
-        if(!isInitialized()) throw IllegalStateException("Model not initialized")
+        if (!isInitialized()) throw IllegalStateException("Model not initialized")
 
         val processedBitmap = centerCrop(bitmap, 160)
         val inputShape = longArrayOf(1, 3, 160, 160)
         val imgData = preProcess(processedBitmap)
 
-        OnnxTensor.createTensor(model.getEnv(), imgData, inputShape).use { inputTensor ->
-            val inputName = model.getInputNames()?.firstOrNull()
-                ?: throw IllegalStateException("Model inputs not available")
-            val output = model.run(mapOf(inputName to inputTensor))
-            (output.values.first() as Array<FloatArray>)[0] // already normalized
-        }
+        val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
+        val output = model.run(mapOf(inputName to TensorData.FloatBufferTensor(imgData, inputShape)))
+        (output.values.first() as Array<FloatArray>)[0]
     }
 
     suspend fun embedBatch(context: Context, bitmaps: List<Bitmap>): List<FloatArray> {

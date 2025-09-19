@@ -1,6 +1,5 @@
 package com.fpf.sentinellens.lib.ml
 
-import ai.onnxruntime.OnnxTensor
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.util.Log
@@ -15,6 +14,7 @@ import com.fpf.smartscansdk.core.ml.models.ModelSource
 import com.fpf.smartscansdk.core.ml.models.OnnxModel
 import com.fpf.smartscansdk.core.ml.models.ResourceId
 import com.fpf.smartscansdk.core.ml.models.ResourceOnnxLoader
+import com.fpf.smartscansdk.core.ml.models.TensorData
 import java.nio.ByteBuffer
 
 interface IDetectionProvider<T> {
@@ -45,58 +45,55 @@ class FaceDetectorHelper(
 
     private var closed = false
 
-    override suspend fun detect(bitmap: Bitmap): Pair<List<Float>, List<FloatArray>> =
-        withContext(Dispatchers.Default) {
-            val startTime = System.currentTimeMillis()
-            val inputShape = longArrayOf(1, 3, 240, 320)
-            val imgData: FloatBuffer = preprocessImg(bitmap)
+    override suspend fun detect(bitmap: Bitmap): Pair<List<Float>, List<FloatArray>> = withContext(Dispatchers.Default) {
+        val startTime = System.currentTimeMillis()
+        val inputShape = longArrayOf(1, 3, 240, 320)
+        val imgData: FloatBuffer = preprocessImg(bitmap)
+        val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
+        val outputs = model.run(mapOf(inputName to TensorData.FloatBufferTensor(imgData, inputShape)))
 
-            OnnxTensor.createTensor(model.getEnv(), imgData, inputShape).use { inputTensor ->
-                val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
-                val outputs = model.run(mapOf(inputName to inputTensor))
-                val outputList = outputs.values.toList()
-                @Suppress("UNCHECKED_CAST")
-                val scoresRawFull  = outputList[0] as Array<Array<FloatArray>>
-                @Suppress("UNCHECKED_CAST")
-                val boxesRawFull = outputList[1] as Array<Array<FloatArray>>
+        val outputList = outputs.values.toList()
+        @Suppress("UNCHECKED_CAST")
+        val scoresRawFull  = outputList[0] as Array<Array<FloatArray>>
+        @Suppress("UNCHECKED_CAST")
+        val boxesRawFull = outputList[1] as Array<Array<FloatArray>>
 
-                // Extract the first element (batch dimension)
-                val scoresRaw = scoresRawFull[0]  // shape: [num_boxes, 2]
-                val boxesRaw = boxesRawFull[0]    // shape: [num_boxes, 4]
+        // Extract the first element (batch dimension)
+        val scoresRaw = scoresRawFull[0]  // shape: [num_boxes, 2]
+        val boxesRaw = boxesRawFull[0]    // shape: [num_boxes, 4]
 
-                val imgWidth = bitmap.width
-                val imgHeight = bitmap.height
+        val imgWidth = bitmap.width
+        val imgHeight = bitmap.height
 
-                val boxesList = mutableListOf<FloatArray>()
-                val scoresList = mutableListOf<Float>()
-                for (i in scoresRaw.indices) {
-                    val faceScore = scoresRaw[i][1]
-                    if (faceScore > CONF_THRESHOLD) {
-                        val box = boxesRaw[i]
-                        // Box values are normalized; convert to absolute pixel coordinates.
-                        val x1 = box[0] * imgWidth
-                        val y1 = box[1] * imgHeight
-                        val x2 = box[2] * imgWidth
-                        val y2 = box[3] * imgHeight
-                        boxesList.add(floatArrayOf(x1, y1, x2, y2))
-                        scoresList.add(faceScore)
-                    }
-                }
-
-                val inferenceTime = System.currentTimeMillis() - startTime
-                Log.d(TAG, "Detection Inference Time: $inferenceTime ms")
-
-                // Apply NMS if any detection exists.
-                if (boxesList.isNotEmpty()) {
-                    val keepIndices = nms(boxesList, scoresList, NMS_THRESHOLD)
-                    val filteredBoxes = keepIndices.map { boxesList[it] }
-                    val filteredScores = keepIndices.map { scoresList[it] }
-                    return@withContext Pair(filteredScores, filteredBoxes)
-                } else {
-                    return@withContext Pair(emptyList<Float>(), emptyList<FloatArray>())
-                }
+        val boxesList = mutableListOf<FloatArray>()
+        val scoresList = mutableListOf<Float>()
+        for (i in scoresRaw.indices) {
+            val faceScore = scoresRaw[i][1]
+            if (faceScore > CONF_THRESHOLD) {
+                val box = boxesRaw[i]
+                // Box values are normalized; convert to absolute pixel coordinates.
+                val x1 = box[0] * imgWidth
+                val y1 = box[1] * imgHeight
+                val x2 = box[2] * imgWidth
+                val y2 = box[3] * imgHeight
+                boxesList.add(floatArrayOf(x1, y1, x2, y2))
+                scoresList.add(faceScore)
             }
         }
+
+        val inferenceTime = System.currentTimeMillis() - startTime
+        Log.d(TAG, "Detection Inference Time: $inferenceTime ms")
+
+        // Apply NMS if any detection exists.
+        if (boxesList.isNotEmpty()) {
+            val keepIndices = nms(boxesList, scoresList, NMS_THRESHOLD)
+            val filteredBoxes = keepIndices.map { boxesList[it] }
+            val filteredScores = keepIndices.map { scoresList[it] }
+            return@withContext Pair(filteredScores, filteredBoxes)
+        } else {
+            return@withContext Pair(emptyList<Float>(), emptyList<FloatArray>())
+        }
+    }
 
     private fun preprocessImg(bitmap: Bitmap): FloatBuffer {
         val targetWidth = 320
