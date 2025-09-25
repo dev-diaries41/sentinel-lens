@@ -18,6 +18,7 @@ import com.fpf.smartscansdk.core.processors.BatchProcessor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+
 class FaceComparisonHelper(
     resources: Resources,
     modelSource: ModelSource,
@@ -29,6 +30,8 @@ class FaceComparisonHelper(
 
     companion object {
         private const val TAG = "FaceComparisonHelper"
+        const val INCEPTION_IMAGE_WIDTH = 160L
+        const val INCEPTION_IMAGE_HEIGHT = 160L
     }
 
     override val embeddingDim: Int = 512
@@ -38,11 +41,11 @@ class FaceComparisonHelper(
 
     fun isInitialized() = model.isLoaded()
 
-    override suspend fun embed(bitmap: Bitmap): FloatArray = withContext(Dispatchers.Default) {
+    override suspend fun embed(data: Bitmap): FloatArray = withContext(Dispatchers.Default) {
         if (!isInitialized()) throw IllegalStateException("Model not initialized")
 
-        val processedBitmap = centerCrop(bitmap, 160)
-        val inputShape = longArrayOf(1, 3, 160, 160)
+        val processedBitmap = centerCrop(data, INCEPTION_IMAGE_WIDTH.toInt())
+        val inputShape = longArrayOf(1, 3, INCEPTION_IMAGE_WIDTH, INCEPTION_IMAGE_HEIGHT)
         val imgData = preProcess(processedBitmap)
 
         val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
