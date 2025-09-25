@@ -27,6 +27,8 @@ typealias FaceDetectorProvider = IDetectionProvider<Bitmap>
 class FaceDetectorHelper(
     resources: Resources,
     modelSource: ModelSource,
+    private val confThreshold: Float = 0.5f,
+    private val nmsThreshold: Float = 0.3f
 ) : FaceDetectorProvider {
     private val model: OnnxModel = when(modelSource){
         is FilePath -> OnnxModel(FileOnnxLoader(modelSource.path))
@@ -35,8 +37,8 @@ class FaceDetectorHelper(
 
     companion object {
         private const val TAG = "FaceDetectorHelper"
-        private const val CONF_THRESHOLD = 0.5f
-        private const val NMS_THRESHOLD = 0.3f
+        const val DETECTOR_IMAGE_WIDTH = 240L
+        const val DETECTOR_IMAGE_HEIGHT = 320L
     }
 
     suspend fun initialize() = model.loadModel()
@@ -45,10 +47,10 @@ class FaceDetectorHelper(
 
     private var closed = false
 
-    override suspend fun detect(bitmap: Bitmap): Pair<List<Float>, List<FloatArray>> = withContext(Dispatchers.Default) {
+    override suspend fun detect(data: Bitmap): Pair<List<Float>, List<FloatArray>> = withContext(Dispatchers.Default) {
         val startTime = System.currentTimeMillis()
-        val inputShape = longArrayOf(1, 3, 240, 320)
-        val imgData: FloatBuffer = preprocessImg(bitmap)
+        val inputShape = longArrayOf(1, 3, DETECTOR_IMAGE_WIDTH, DETECTOR_IMAGE_HEIGHT)
+        val imgData: FloatBuffer = preprocessImg(data)
         val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
         val outputs = model.run(mapOf(inputName to TensorData.FloatBufferTensor(imgData, inputShape)))
 
@@ -62,14 +64,14 @@ class FaceDetectorHelper(
         val scoresRaw = scoresRawFull[0]  // shape: [num_boxes, 2]
         val boxesRaw = boxesRawFull[0]    // shape: [num_boxes, 4]
 
-        val imgWidth = bitmap.width
-        val imgHeight = bitmap.height
+        val imgWidth = data.width
+        val imgHeight = data.height
 
         val boxesList = mutableListOf<FloatArray>()
         val scoresList = mutableListOf<Float>()
         for (i in scoresRaw.indices) {
             val faceScore = scoresRaw[i][1]
-            if (faceScore > CONF_THRESHOLD) {
+            if (faceScore > confThreshold) {
                 val box = boxesRaw[i]
                 // Box values are normalized; convert to absolute pixel coordinates.
                 val x1 = box[0] * imgWidth
@@ -86,7 +88,7 @@ class FaceDetectorHelper(
 
         // Apply NMS if any detection exists.
         if (boxesList.isNotEmpty()) {
-            val keepIndices = nms(boxesList, scoresList, NMS_THRESHOLD)
+            val keepIndices = nms(boxesList, scoresList, nmsThreshold)
             val filteredBoxes = keepIndices.map { boxesList[it] }
             val filteredScores = keepIndices.map { scoresList[it] }
             return@withContext Pair(filteredScores, filteredBoxes)
