@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import com.fpf.sentinellens.lib.centerCrop
-import com.fpf.sentinellens.lib.preProcess
 import com.fpf.smartscansdk.core.ml.embeddings.ImageEmbeddingProvider
 import com.fpf.smartscansdk.core.ml.models.FileOnnxLoader
 import com.fpf.smartscansdk.core.ml.models.FilePath
@@ -17,6 +16,7 @@ import com.fpf.smartscansdk.core.ml.models.TensorData
 import com.fpf.smartscansdk.core.processors.BatchProcessor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.nio.FloatBuffer
 
 
 class FaceComparisonHelper(
@@ -30,8 +30,10 @@ class FaceComparisonHelper(
 
     companion object {
         private const val TAG = "FaceComparisonHelper"
-        const val INCEPTION_IMAGE_WIDTH = 160L
-        const val INCEPTION_IMAGE_HEIGHT = 160L
+        const val DIM_BATCH_SIZE = 1
+        const val DIM_PIXEL_SIZE = 3
+        const val INCEPTION_IMAGE_SIZE_X = 160
+        const val INCEPTION_IMAGE_SIZE_Y = 160
     }
 
     override val embeddingDim: Int = 512
@@ -44,8 +46,8 @@ class FaceComparisonHelper(
     override suspend fun embed(data: Bitmap): FloatArray = withContext(Dispatchers.Default) {
         if (!isInitialized()) throw IllegalStateException("Model not initialized")
 
-        val processedBitmap = centerCrop(data, INCEPTION_IMAGE_WIDTH.toInt())
-        val inputShape = longArrayOf(1, 3, INCEPTION_IMAGE_WIDTH, INCEPTION_IMAGE_HEIGHT)
+        val processedBitmap = centerCrop(data, INCEPTION_IMAGE_SIZE_X)
+        val inputShape = longArrayOf(DIM_BATCH_SIZE.toLong(), DIM_PIXEL_SIZE.toLong(), INCEPTION_IMAGE_SIZE_X.toLong(), INCEPTION_IMAGE_SIZE_Y.toLong())
         val imgData = preProcess(processedBitmap)
 
         val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
@@ -67,6 +69,31 @@ class FaceComparisonHelper(
 
         processor.run(bitmaps)
         return allEmbeddings
+    }
+
+    private fun preProcess(bitmap: Bitmap): FloatBuffer {
+        val imgData = FloatBuffer.allocate(
+            DIM_BATCH_SIZE
+                    * DIM_PIXEL_SIZE
+                    * INCEPTION_IMAGE_SIZE_X
+                    * INCEPTION_IMAGE_SIZE_Y
+        )
+        imgData.rewind()
+        val stride = INCEPTION_IMAGE_SIZE_X * INCEPTION_IMAGE_SIZE_Y
+        val bmpData = IntArray(stride)
+        bitmap.getPixels(bmpData, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        for (i in 0..INCEPTION_IMAGE_SIZE_X - 1) {
+            for (j in 0..INCEPTION_IMAGE_SIZE_Y - 1) {
+                val idx = INCEPTION_IMAGE_SIZE_Y * i + j
+                val pixelValue = bmpData[idx]
+                imgData.put(idx, (((pixelValue shr 16 and 0xFF) / 255f - 0.485f) / 0.229f))
+                imgData.put(idx + stride, (((pixelValue shr 8 and 0xFF) / 255f - 0.456f) / 0.224f))
+                imgData.put(idx + stride * 2, (((pixelValue and 0xFF) / 255f - 0.406f) / 0.225f))
+            }
+        }
+
+        imgData.rewind()
+        return imgData
     }
 
     override fun closeSession() {
