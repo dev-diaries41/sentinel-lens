@@ -125,7 +125,8 @@ suspend fun loadBitmapFromLocalPath(
 }
 
 
-fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri? {
+suspend fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri?=withContext(
+    Dispatchers.IO) {
     val values = ContentValues().apply {
         put(MediaStore.Video.Media.DISPLAY_NAME, videoFile.name)
         put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
@@ -137,7 +138,7 @@ fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri? {
     val videoUri = resolver.insert(collectionUri, values)
     if (videoUri == null) {
         Log.e("VideoInsertionError", "Failed to create new MediaStore record.")
-        return null
+        return@withContext null
     }
 
     try {
@@ -148,14 +149,14 @@ fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri? {
     } catch (e: Exception) {
         Log.e("VideoInsertionError", "Error copying file to MediaStore", e)
         resolver.delete(videoUri, null, null)
-        return null
+        return@withContext  null
     }
 
-    return videoUri
+    videoUri
 }
 
 
-private fun copyFileToStream(sourceFile: File, outputStream: OutputStream) {
+private fun copyFileToStream(sourceFile: File, outputStream: OutputStream){
     FileInputStream(sourceFile).use { inputStream ->
         val buffer = ByteArray(1024)
         var length: Int
