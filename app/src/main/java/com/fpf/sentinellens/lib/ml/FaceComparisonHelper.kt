@@ -46,10 +46,8 @@ class FaceComparisonHelper(
     override suspend fun embed(data: Bitmap): FloatArray = withContext(Dispatchers.Default) {
         if (!isInitialized()) throw IllegalStateException("Model not initialized")
 
-        val processedBitmap = centerCrop(data, INCEPTION_IMAGE_SIZE_X)
+        val imgData = preProcess(data)
         val inputShape = longArrayOf(DIM_BATCH_SIZE.toLong(), DIM_PIXEL_SIZE.toLong(), INCEPTION_IMAGE_SIZE_X.toLong(), INCEPTION_IMAGE_SIZE_Y.toLong())
-        val imgData = preProcess(processedBitmap)
-
         val inputName = model.getInputNames()?.firstOrNull() ?: throw IllegalStateException("Model inputs not available")
         val output = model.run(mapOf(inputName to TensorData.FloatBufferTensor(imgData, inputShape)))
         (output.values.first() as Array<FloatArray>)[0]
@@ -72,6 +70,8 @@ class FaceComparisonHelper(
     }
 
     private fun preProcess(bitmap: Bitmap): FloatBuffer {
+        val centredBitmap = centerCrop(bitmap, INCEPTION_IMAGE_SIZE_X)
+
         val imgData = FloatBuffer.allocate(
             DIM_BATCH_SIZE
                     * DIM_PIXEL_SIZE
@@ -81,7 +81,7 @@ class FaceComparisonHelper(
         imgData.rewind()
         val stride = INCEPTION_IMAGE_SIZE_X * INCEPTION_IMAGE_SIZE_Y
         val bmpData = IntArray(stride)
-        bitmap.getPixels(bmpData, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        centredBitmap.getPixels(bmpData, 0, centredBitmap.width, 0, 0, centredBitmap.width, centredBitmap.height)
         for (i in 0..INCEPTION_IMAGE_SIZE_X - 1) {
             for (j in 0..INCEPTION_IMAGE_SIZE_Y - 1) {
                 val idx = INCEPTION_IMAGE_SIZE_Y * i + j
