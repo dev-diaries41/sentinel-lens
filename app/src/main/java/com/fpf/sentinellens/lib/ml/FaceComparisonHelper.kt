@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
-import com.fpf.sentinellens.lib.centerCrop
 import com.fpf.smartscansdk.core.ml.embeddings.ImageEmbeddingProvider
 import com.fpf.smartscansdk.core.ml.models.FileOnnxLoader
 import com.fpf.smartscansdk.core.ml.models.FilePath
@@ -14,6 +13,7 @@ import com.fpf.smartscansdk.core.ml.models.ResourceId
 import com.fpf.smartscansdk.core.ml.models.ResourceOnnxLoader
 import com.fpf.smartscansdk.core.ml.models.TensorData
 import com.fpf.smartscansdk.core.processors.BatchProcessor
+import com.fpf.smartscansdk.core.utils.centerCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.nio.FloatBuffer
