@@ -84,7 +84,7 @@ class VideoCaptureHelper(
                 val image = reader.acquireLatestImage()
                 if (image != null) {
                     lastFrameTime = currentTime
-                    frameProcessingScope.launch {
+                    frameProcessingScope.launch(Dispatchers.Default) {
                         try {
                             listener?.onFrame(image, orientation)
                         } finally {
@@ -267,11 +267,12 @@ class VideoCaptureHelper(
 
         closeCamera()
 
-        Handler(Looper.getMainLooper()).post {
+        CoroutineScope(Dispatchers.IO).launch {
             listener?.onRecordingStopped(videoFilePath)
         }
 
         // Optionally, delay shutdown of background thread.
+        // May need to increase delay
         Handler(Looper.getMainLooper()).postDelayed({
             stopBackgroundThread()
             frameProcessingScope.cancel()
@@ -325,7 +326,7 @@ class VideoCaptureHelper(
 
 interface IVideoCaptureListener {
     fun onRecordingStarted()
-    fun onRecordingStopped(videoFilePath: String?)
+    suspend fun onRecordingStopped(videoFilePath: String?)
     fun onError(exception: Exception)
     suspend fun onFrame(image: Image, orientation: Int)
 }

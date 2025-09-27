@@ -64,7 +64,7 @@ class VideoCaptureListener(
         Log.d(TAG, "Callback: Video recording has started")
     }
 
-    override fun onRecordingStopped(videoFilePath: String?) {
+    override suspend fun onRecordingStopped(videoFilePath: String?) {
         if (videoFilePath == null) return
 
         val videoFile = File(videoFilePath)
