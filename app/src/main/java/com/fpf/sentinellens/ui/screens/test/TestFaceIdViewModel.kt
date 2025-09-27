@@ -14,18 +14,21 @@ import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.getBitmapFromUri
 import com.fpf.sentinellens.lib.ml.FaceComparisonHelper
 import com.fpf.sentinellens.lib.ml.FaceDetectorHelper
-import com.fpf.sentinellens.lib.ml.getSimilarities
-import com.fpf.sentinellens.lib.ml.getTopN
+import com.fpf.sentinellens.lib.ml.cropFaces
+import com.fpf.smartscansdk.core.ml.embeddings.getSimilarities
+import com.fpf.smartscansdk.core.ml.embeddings.getTopN
+import com.fpf.smartscansdk.core.ml.models.ResourceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.fpf.sentinellens.R
 
 class TestFaceIdViewModel(application: Application) : AndroidViewModel(application){
+    val faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
+    val faceDetector= FaceDetectorHelper(application.resources, ResourceId(R.raw.face_detect))
+
     val repository = FacesRepository(FaceDatabase.Companion.getDatabase(application).faceDao())
     val hasAnyFaces = repository.hasAnyFaces
-
-    private var faceComparer: FaceComparisonHelper? = null
-    private var faceDetector: FaceDetectorHelper? = null
 
     private val _blacklistSimilarity = MutableLiveData<Pair<Float, String>?>(null)
     val blacklistSimilarity: LiveData<Pair<Float, String>?> get() = _blacklistSimilarity
@@ -44,8 +47,8 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
-            faceComparer = FaceComparisonHelper(application.resources)
-            faceDetector= FaceDetectorHelper(application.resources)
+            faceComparer.initialize()
+            faceDetector.initialize()
             _isLoading.postValue(false)
         }
     }
@@ -65,18 +68,19 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
         _error.value = null
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                if(faceDetector == null || faceComparer == null){
-                    throw IllegalStateException("Models not loaded")
+                if(!faceDetector.isInitialized() || !faceComparer.isInitialized()){
+                    _error.postValue("Models not loaded")
+                    return@launch
                 }
                 val croppedFaces = mutableListOf<Bitmap>()
                 val uri = _selectedImage.value ?: return@launch
                 val bitmap = getBitmapFromUri(getApplication(), uri)
 
-                val (_, boxes) = faceDetector!!.detectFaces(bitmap)
-                val faces = faceDetector!!.cropFaces(bitmap, boxes)
+                val (_, boxes) = faceDetector.detect(bitmap)
+                val faces = cropFaces(bitmap, boxes)
                 croppedFaces.addAll(faces)
 
-                val faceEmbeddings = croppedFaces.map{faceComparer!!.generateFaceEmbedding(it)}
+                val faceEmbeddings = croppedFaces.map{faceComparer.embed(it)}
 
                 if(faceEmbeddings.isEmpty()) {
                     _error.postValue("No faces detected")

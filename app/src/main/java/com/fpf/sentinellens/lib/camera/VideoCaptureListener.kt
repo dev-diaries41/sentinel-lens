@@ -13,9 +13,11 @@ import com.fpf.sentinellens.lib.cameraImageToBitmap
 import com.fpf.sentinellens.lib.insertVideoIntoMediaStore
 import com.fpf.sentinellens.lib.ml.FaceComparisonHelper
 import com.fpf.sentinellens.lib.ml.FaceDetectorHelper
-import com.fpf.sentinellens.lib.ml.getSimilarities
-import com.fpf.sentinellens.lib.ml.getTopN
+import com.fpf.sentinellens.lib.ml.cropFaces
 import com.fpf.sentinellens.lib.showNotification
+import com.fpf.smartscansdk.core.ml.embeddings.getSimilarities
+import com.fpf.smartscansdk.core.ml.embeddings.getTopN
+import com.fpf.smartscansdk.core.ml.models.ResourceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,13 +36,14 @@ class VideoCaptureListener(
     private val mode: FaceType = FaceType.BLACKLIST
     ): IMlVideoCaptureListener
 {
-    private var faceComparer:FaceComparisonHelper? = null
-    private var faceDetector: FaceDetectorHelper? = null
     private var faces: List<Face>? = null
     private var blackList: List<Face>? = null
     private var whiteList: List<Face>? = null
     private var lastDetectionTime: Long = 0L
     private var numDetections: Int = 0
+
+    val faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
+    val faceDetector= FaceDetectorHelper(application.resources, ResourceId(R.raw.face_detect))
 
     companion object {
         private const val TAG = "VideoCaptureListener"
@@ -48,8 +51,8 @@ class VideoCaptureListener(
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            faceComparer = FaceComparisonHelper(application.resources)
-            faceDetector = FaceDetectorHelper(application.resources)
+            faceDetector.initialize()
+            faceComparer.initialize()
             val repository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
             faces = repository.getAllFacesSync()
             blackList = faces?.filter{it.type == FaceType.BLACKLIST }
@@ -61,7 +64,7 @@ class VideoCaptureListener(
         Log.d(TAG, "Callback: Video recording has started")
     }
 
-    override fun onRecordingStopped(videoFilePath: String?) {
+    override suspend fun onRecordingStopped(videoFilePath: String?) {
         if (videoFilePath == null) return
 
         val videoFile = File(videoFilePath)
@@ -79,17 +82,17 @@ class VideoCaptureListener(
     }
 
     override suspend fun onFrame(image: Image, orientation: Int) {
-        if (faces?.isEmpty() == true || faceDetector == null || faceComparer == null) return
+        if (faces?.isEmpty() == true || !faceDetector.isInitialized() || !faceComparer.isInitialized()) return
 
         val bitmap = cameraImageToBitmap(image, orientation)
-        val (_, boxes) = faceDetector!!.detectFaces(bitmap)
-        val faces = faceDetector!!.cropFaces(bitmap, boxes)
+        val (_, boxes) = faceDetector.detect(bitmap)
+        val faces = cropFaces(bitmap, boxes)
 
         if (faces.isEmpty()) return
 
         var detectedUnauthorisedPerson = false
         var unauthorisedPersonName = ""
-        val detectedFacesEmbeddings = faces.map{faceComparer!!.generateFaceEmbedding(it)}
+        val detectedFacesEmbeddings = faces.map{faceComparer.embed(it)}
 
         if(!blackList.isNullOrEmpty() && mode == FaceType.BLACKLIST){
             var bestBlackListMatch = -1f
@@ -159,7 +162,7 @@ class VideoCaptureListener(
     }
 
     override fun closeSession(){
-        faceComparer?.closeSession()
-        faceDetector?.closeSession()
+        faceComparer.closeSession()
+        faceDetector.closeSession()
     }
 }

@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.fpf.sentinellens"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.fpf.sentinellens"
@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+    implementation("com.github.dev-diaries41.smartscan-sdk:smartscan-core:1.0.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -75,7 +76,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.onnxruntime.android)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
