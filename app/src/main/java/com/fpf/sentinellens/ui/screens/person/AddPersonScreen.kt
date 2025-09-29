@@ -28,11 +28,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.ui.components.MediaStoreImage
 import com.fpf.sentinellens.ui.components.SettingsSelect
 import com.fpf.sentinellens.ui.components.SettingsTextInput
-import com.fpf.sentinellens.ui.screens.settings.modeOptions
 
 @Composable
 fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
@@ -99,10 +99,10 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
 
         SettingsSelect(
             label = "",
-            selectedOption = modeOptions[faceType]!!,
-            options = modeOptions.values.toList(),
+            selectedOption = DetectionTypes[faceType]!!,
+            options = DetectionTypes.values.toList(),
             onOptionSelected = { option ->
-                val selected = modeOptions.entries
+                val selected = DetectionTypes.entries
                     .first { it.value == option }
                     .key
                 viewModel.updateFaceType(selected)
