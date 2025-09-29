@@ -1,20 +1,13 @@
 package com.fpf.sentinellens.ui.screens.settings
 
 import android.app.Application
-import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Log
-import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.*
 import com.fpf.sentinellens.lib.Storage
-import com.fpf.sentinellens.lib.getBitmapFromUri
-import com.fpf.sentinellens.lib.ml.FaceComparisonHelper
-import com.fpf.sentinellens.lib.ml.FaceDetectorHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -47,11 +40,6 @@ val alertFrequencyOptions = mapOf(
 val cameraOptions = mapOf(
     CameraCharacteristics.LENS_FACING_FRONT to "Front",
     CameraCharacteristics.LENS_FACING_BACK to "Back",
-)
-
-val modeOptions = mapOf(
-    FaceType.BLACKLIST to "Blacklist",
-    FaceType.WHITELIST to "Whitelist",
 )
 
 @Serializable

@@ -11,9 +11,15 @@
     <string name="title_watchlist">Watchlist</string>
     <string name="title_add_person">Add Person</string>
     <string name="title_donate">Donate</string>
+    <string name="title_log">Detection Log</string>
 
     <!--Error Messages-->
     <string name="error_watchlist_not_setup_message">Set up your watchlist</string>
+
+    <!-- Scan history screen -->
+    <string name="no_logs_history">No Logs</string>
+    <string name="no_logs_description">""</string>
+
 
     <!--Surveillance Screen-->
     <string name="surveillance_notice_message">Start facial recognition surveillance now and get alerts when unauthorised people are detected.</string>

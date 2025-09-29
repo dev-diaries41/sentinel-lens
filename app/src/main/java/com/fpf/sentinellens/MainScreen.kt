@@ -8,11 +8,13 @@ import androidx.navigation.compose.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.fpf.sentinellens.ui.screens.donate.DonateScreen
+import com.fpf.sentinellens.ui.screens.log.DetectionLogScreen
 import com.fpf.sentinellens.ui.screens.person.AddPersonScreen
 import com.fpf.sentinellens.ui.screens.watchlist.WatchlistScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsScreen
@@ -42,6 +44,7 @@ fun MainScreen() {
         currentRoute == "watchlist" -> stringResource(R.string.title_watchlist)
         currentRoute == "addPerson" -> stringResource(R.string.title_add_person)
         currentRoute == "surveillance" -> stringResource(R.string.title_surveillance)
+        currentRoute == "log" -> stringResource(R.string.title_log)
         currentRoute?.startsWith("settingsDetail") == true -> when (typeVal) {
             "threshold" -> stringResource(R.string.setting_similarity_threshold)
             "telegram" -> stringResource(R.string.setting_telegram_config)
@@ -66,6 +69,14 @@ fun MainScreen() {
                     }
                 },
                 actions = {
+                    if (currentRoute != "log") {
+                        IconButton(onClick = { navController.navigate("log") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Description,
+                                contentDescription = "Detection Log Screen"
+                            )
+                        }
+                    }
                     if (currentRoute != "test") {
                         IconButton(onClick = { navController.navigate("test") }) {
                             Icon(
@@ -85,9 +96,7 @@ fun MainScreen() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("surveillance"){
-                SurveillanceScreen(
-                    viewModel = surveillanceViewModel,
-                )
+                SurveillanceScreen(viewModel = surveillanceViewModel)
             }
             composable("watchlist"){
                 WatchlistScreen(
@@ -97,9 +106,13 @@ fun MainScreen() {
                 )
             }
             composable("addPerson") {
-                AddPersonScreen(
-                )
+                AddPersonScreen()
             }
+
+            composable("log") {
+                DetectionLogScreen()
+            }
+
             composable("donate") {
                 DonateScreen()
             }
@@ -122,9 +135,7 @@ fun MainScreen() {
                 )
             }
             composable("test"){
-                TestFaceIdScreen(
-                    settingsViewModel=settingsViewModel
-                )
+                TestFaceIdScreen(settingsViewModel=settingsViewModel)
             }
         }
     }
