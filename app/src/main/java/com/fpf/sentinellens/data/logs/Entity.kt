@@ -9,6 +9,6 @@ data class DetectionLogEntity(
     val id: String,
     val date: Long,
     val type: String,
-    val name: String,
+    val name: String?,
     val similarity: Float
 )
