@@ -84,7 +84,7 @@ fun DetectionLogItemCard(data: DetectionLogEntity) {
                 Spacer(modifier = Modifier.height(4.dp))
             }
             Text(
-                text = "Person detected: ${data.name}",
+                text = "Person detected: ${data.name?: "Unknown"}",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.alpha(0.8f)
             )
