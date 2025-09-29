@@ -59,9 +59,7 @@ fun DetectionLogScreen(viewModel: DetectionLogViewModel = viewModel()) {
 fun DetectionLogItemCard(data: DetectionLogEntity) {
     Card(
         elevation = CardDefaults.cardElevation(4.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 0.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 0.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -74,35 +72,31 @@ fun DetectionLogItemCard(data: DetectionLogEntity) {
                 tint = MaterialTheme.colorScheme.primary
             )
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Detection Log", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Date: ${toDateString(data.date)}",
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Detection Log",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Text(text = toDateString(data.date),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
+                    )
+                }
+
+                Text(text = "Person detected: ${data.name ?: "Unknown"}",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.8f)
+                    modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-            Text(
-                text = "Person detected: ${data.name?: "Unknown"}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.alpha(0.8f)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Text(
-                    text = "Detection type: ${data.type}",
+                Text(text = "Similarity: ${"%.2f".format(data.similarity)}",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.8f)
+                    modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
                 )
-                Text(
-                    text = "Similarity: ${data.similarity}",
+                Text(text = "Detection type: ${data.type}",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.8f)
+                    modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
                 )
             }
         }
