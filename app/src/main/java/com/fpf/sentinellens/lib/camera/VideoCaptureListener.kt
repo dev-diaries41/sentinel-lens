@@ -6,6 +6,7 @@ import android.media.Image
 import android.util.Log
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.api.sendTelegramMessage
+import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FacesRepository
@@ -30,11 +31,6 @@ import java.io.File
 interface IMlVideoCaptureListener : IVideoCaptureListener {
     fun closeSession()
 }
-
-val detectionTypes = mapOf(
-    FaceType.BLACKLIST to "Blacklist",
-    FaceType.WHITELIST to "Whitelist"
-)
 
 class VideoCaptureListener(
     private val application: Application,
@@ -161,7 +157,7 @@ class VideoCaptureListener(
                 DetectionLogEntity(
                     id = System.currentTimeMillis().toString(),
                     date = System.currentTimeMillis(),
-                    type = detectionTypes[detectionType]!!,
+                    type = DetectionTypes[detectionType]!!,
                     name = name,
                     similarity = similarity
                 )
