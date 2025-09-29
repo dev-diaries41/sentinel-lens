@@ -8,6 +8,7 @@ import androidx.navigation.compose.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavType
@@ -68,6 +69,14 @@ fun MainScreen() {
                     }
                 },
                 actions = {
+                    if (currentRoute != "log") {
+                        IconButton(onClick = { navController.navigate("log") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Description,
+                                contentDescription = "Detection Log Screen"
+                            )
+                        }
+                    }
                     if (currentRoute != "test") {
                         IconButton(onClick = { navController.navigate("test") }) {
                             Icon(
