@@ -29,10 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.ui.components.MediaStoreImage
 import com.fpf.sentinellens.ui.components.SwipeableCard
-import com.fpf.sentinellens.ui.screens.settings.modeOptions
 
 
 @Composable
@@ -112,7 +112,7 @@ fun PersonCard(data: Face) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = modeOptions[data.type]!!,
+                    text = DetectionTypes[data.type]!!,
                     style = MaterialTheme.typography.bodyMedium,
                     color = when(data.type){
                         FaceType.BLACKLIST -> Color.Red

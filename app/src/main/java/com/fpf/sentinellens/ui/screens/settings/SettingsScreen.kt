@@ -21,6 +21,7 @@ import com.fpf.sentinellens.ui.components.SettingsCard
 import androidx.core.net.toUri
 import com.fpf.sentinellens.ui.components.SettingsSelect
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.data.faces.DetectionTypes
 
 @Composable
 fun SettingsScreen(
@@ -57,12 +58,12 @@ fun SettingsScreen(
 
                 SettingsSelect(
                     label = stringResource(id = R.string.setting_surveillance_mode),
-                    selectedOption = modeOptions[appSettings.mode]!!,
-                    options = modeOptions.values.toList(),
+                    selectedOption = DetectionTypes[appSettings.mode]!!,
+                    options = DetectionTypes.values.toList(),
                     onOptionSelected = { option ->
-                        val selected = modeOptions.entries
+                        val selected = DetectionTypes.entries
                             .find { it.value == option }
-                            ?.key ?: modeOptions.keys.first()
+                            ?.key ?: DetectionTypes.keys.first()
                         viewModel.updateMode(selected)
                     },
 //                    description = stringResource(id = R.string.setting_mode_description)
