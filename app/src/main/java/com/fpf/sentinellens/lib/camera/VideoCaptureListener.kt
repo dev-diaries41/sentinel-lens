@@ -1,6 +1,7 @@
 package com.fpf.sentinellens.lib.camera
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
 import com.fpf.sentinellens.R
@@ -9,6 +10,9 @@ import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.faces.FaceType
+import com.fpf.sentinellens.data.logs.DetectionLogDatabase
+import com.fpf.sentinellens.data.logs.DetectionLogEntity
+import com.fpf.sentinellens.data.logs.DetectionLogRepository
 import com.fpf.sentinellens.lib.cameraImageToBitmap
 import com.fpf.sentinellens.lib.insertVideoIntoMediaStore
 import com.fpf.sentinellens.lib.ml.FaceComparisonHelper
@@ -27,6 +31,11 @@ interface IMlVideoCaptureListener : IVideoCaptureListener {
     fun closeSession()
 }
 
+val detectionTypes = mapOf(
+    FaceType.BLACKLIST to "Blacklist",
+    FaceType.WHITELIST to "Whitelist"
+)
+
 class VideoCaptureListener(
     private val application: Application,
     private val alertFrequency: Long = 60 * 1000L,
@@ -44,6 +53,7 @@ class VideoCaptureListener(
 
     val faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
     val faceDetector= FaceDetectorHelper(application.resources, ResourceId(R.raw.face_detect))
+    private val detectionLogRepository: DetectionLogRepository = DetectionLogRepository(DetectionLogDatabase.getDatabase(application).detectionLogsDao())
 
     companion object {
         private const val TAG = "VideoCaptureListener"
@@ -91,41 +101,38 @@ class VideoCaptureListener(
         if (faces.isEmpty()) return
 
         var detectedUnauthorisedPerson = false
-        var unauthorisedPersonName = ""
+        var unauthorisedPersonName: String? = null
         val detectedFacesEmbeddings = faces.map{faceComparer.embed(it)}
+        var bestMatch = -1f
 
         if(!blackList.isNullOrEmpty() && mode == FaceType.BLACKLIST){
-            var bestBlackListMatch = -1f
-
             detectedFacesEmbeddings.forEach{
                 val blacklistSimilarities = getSimilarities(it, blackList!!.map{it.embeddings} )
                 val bestIndex = getTopN(blacklistSimilarities, 1).first()
                 val similarity = blacklistSimilarities[bestIndex]
-                if(similarity > bestBlackListMatch){
-                    bestBlackListMatch = similarity
+                if(similarity > bestMatch){
+                    bestMatch = similarity
                     unauthorisedPersonName = blackList!![bestIndex].name
                 }
             }
 
-            if(bestBlackListMatch >= threshold){
+            if(bestMatch >= threshold){
                 detectedUnauthorisedPerson = true
             }
         }
 
         if(!whiteList.isNullOrEmpty() && mode == FaceType.WHITELIST){
-            var bestWhiteListMatch = -1f
-
             detectedFacesEmbeddings.forEach{
                 val whitelistSimilarities = getSimilarities(it, whiteList!!.map{it.embeddings} )
                 val bestIndex = getTopN(whitelistSimilarities, 1).first()
                 val similarity = whitelistSimilarities[bestIndex]
-                if(similarity > bestWhiteListMatch){
-                    bestWhiteListMatch = similarity
+                if(similarity > bestMatch){
+                    bestMatch = similarity
                 }
             }
             // This means the detected person is not whitelisted
             // Whitelist is prone to false detection so multiple detections reduce false positives
-            if(bestWhiteListMatch != -1f && bestWhiteListMatch < threshold){
+            if(bestMatch != -1f && bestMatch < threshold){
                 numDetections++
                 if(numDetections >= 3){
                     detectedUnauthorisedPerson = true
@@ -138,26 +145,41 @@ class VideoCaptureListener(
         }
 
         if(detectedUnauthorisedPerson){
-            val currentDetectionTime = System.currentTimeMillis()
+            onDetectedPerson(unauthorisedPersonName, bitmap, mode, bestMatch)
+        }
+    }
 
-            if(currentDetectionTime - lastDetectionTime >= alertFrequency){
-                lastDetectionTime = currentDetectionTime
+    private suspend fun onDetectedPerson(name: String?, frame: Bitmap, detectionType: FaceType, similarity: Float){
+        val currentDetectionTime = System.currentTimeMillis()
+        val shouldAlert = currentDetectionTime - lastDetectionTime >= alertFrequency
+        if(!shouldAlert) return
 
-                val title = application.getString(R.string.notif_detection_title)
-                val messageTitle = if (unauthorisedPersonName.isNotEmpty()) "$title: $unauthorisedPersonName" else title
+        lastDetectionTime = currentDetectionTime
 
-                if(telegramBotToken.isNotEmpty() && telegramChannelId.isNotEmpty()){
-                    val result = sendTelegramMessage(telegramBotToken, messageTitle, telegramChannelId, bitmap)
-                    result.onFailure { error ->
-                        Log.e(TAG, "Error: $error")
-                    }
-                }else{
-                    val baseContent = application.getString(R.string.notif_detection_content)
-                    val content = if (unauthorisedPersonName.isNotEmpty()) "Detected person: $unauthorisedPersonName. $baseContent" else baseContent
+        try {
+            detectionLogRepository.insert(
+                DetectionLogEntity(
+                    id = System.currentTimeMillis().toString(),
+                    date = System.currentTimeMillis(),
+                    type = detectionTypes[detectionType]!!,
+                    name = name,
+                    similarity = similarity
+                )
+            )
+        }catch (e: Exception){
+            Log.e(TAG, "Error inserting detection log: ${e.message}")
+        }
 
-                    showNotification(application, title, content)
-                }
-            }
+        val title = application.getString(R.string.notif_detection_title)
+        val messageTitle = if (name != null) "$title: $name" else title
+
+        if(telegramBotToken.isNotEmpty() && telegramChannelId.isNotEmpty()){
+            val result = sendTelegramMessage(telegramBotToken, messageTitle, telegramChannelId, frame)
+            result.onFailure { error -> Log.e(TAG, "Error sending telegram alert: $error") }
+        }else{
+            val baseContent = application.getString(R.string.notif_detection_content)
+            val content = if (name != null) "Detected person: $name. $baseContent" else baseContent
+            showNotification(application, title, content)
         }
     }
 
