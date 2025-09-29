@@ -11,6 +11,7 @@
     <string name="title_watchlist">Watchlist</string>
     <string name="title_add_person">Add Person</string>
     <string name="title_donate">Donate</string>
+    <string name="title_log">Detection Log</string>
 
     <!--Error Messages-->
     <string name="error_watchlist_not_setup_message">Set up your watchlist</string>
