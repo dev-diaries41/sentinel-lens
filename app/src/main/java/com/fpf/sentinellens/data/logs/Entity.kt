@@ -7,7 +7,6 @@ import androidx.room.*
 data class DetectionLogEntity(
     @PrimaryKey
     val id: String,
-    val faceId: String,
     val date: Long,
     val type: String,
     val name: String,
