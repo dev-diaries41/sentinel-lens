@@ -9,7 +9,7 @@ interface DetectionLogsDao {
     fun getAllScanData(): Flow<List<DetectionLogEntity>>
 
     @Insert
-    suspend fun insert(scanData: DetectionLogEntity): Long
+    suspend fun insert(log: DetectionLogEntity): Long
 
     @Query("DELETE FROM detection_logs where id = :id")
     suspend fun delete(id: String)
