@@ -14,16 +14,15 @@ fun getDirectoryName(context: Context, uri: Uri): String {
     return documentDir?.name.toString()
 }
 
-fun saveImageLocally(context: Context, bitmap: Bitmap, filePath: String): Boolean {
+suspend fun saveImageLocally(bitmap: Bitmap, file: File): Boolean {
     return try {
-        val outFile = File(context.filesDir, filePath)
 
-        outFile.parentFile?.let { parentDir ->
+        file.parentFile?.let { parentDir ->
             if (!parentDir.exists()) {
                 parentDir.mkdirs()
             }
         }
-        outFile.outputStream().use { outStream ->
+        file.outputStream().use { outStream ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream)
         }
         true
@@ -34,10 +33,8 @@ fun saveImageLocally(context: Context, bitmap: Bitmap, filePath: String): Boolea
 }
 
 
-fun loadLocalImage(context: Context, filePath: String): Bitmap? {
+suspend fun loadLocalImage(file: File): Bitmap? {
     return try {
-        val file = File(context.filesDir, filePath)
-
         if (!file.exists()) {
             Log.e("loadLocalImage", "Image file does not exist: ${file.absolutePath}")
             null
@@ -50,12 +47,4 @@ fun loadLocalImage(context: Context, filePath: String): Bitmap? {
     }
 }
 
-fun deleteLocalFile(context: Context, fileName: String): Boolean {
-    val file = File(context.filesDir, fileName)
-    return if (file.exists()) {
-        file.delete()
-    } else {
-        false
-    }
-}
 
