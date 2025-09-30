@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.ui.screens.person
+package com.fpf.sentinellens.ui.screens.watchlist.person
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -49,6 +50,12 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel(), faceId: String?
             uri?.let { viewModel.updateFaceImage(it) }
         }
     )
+
+    LaunchedEffect(faceId) {
+        if(!faceId.isNullOrBlank()){
+            viewModel.onEditing(faceId)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -108,14 +115,14 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel(), faceId: String?
                 val selected = DetectionTypes.entries
                     .first { it.value == option }
                     .key
-                viewModel.updateFaceType(selected)
+                viewModel.updateDetectionType(selected)
             }
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { viewModel.addFace(newName, newFaceImage!!, faceType) },
+            onClick = { viewModel.addFace() },
             enabled = newName.isNotBlank() && newFaceImage != null,
             modifier = Modifier
                 .fillMaxWidth()
