@@ -17,11 +17,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.fpf.sentinellens.ui.components.SettingsCard
 import androidx.core.net.toUri
-import com.fpf.sentinellens.ui.components.SettingsSelect
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.DetectionTypes
+import com.fpf.sentinellens.ui.components.ActionItem
+import com.fpf.sentinellens.ui.components.SelectorItem
 
 @Composable
 fun SettingsScreen(
@@ -56,7 +56,7 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                SettingsSelect(
+                SelectorItem(
                     label = stringResource(id = R.string.setting_surveillance_mode),
                     selectedOption = DetectionTypes[appSettings.mode]!!,
                     options = DetectionTypes.values.toList(),
@@ -69,7 +69,7 @@ fun SettingsScreen(
 //                    description = stringResource(id = R.string.setting_mode_description)
                 )
 
-                SettingsCard(
+                ActionItem(
                     text = stringResource(id = R.string.setting_similarity_threshold),
                     onClick = { onNavigate("settingsDetail/threshold") }
                 )
@@ -81,7 +81,7 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                SettingsSelect(
+                SelectorItem(
                     label = stringResource(id = R.string.setting_camera_type),
                     selectedOption = cameraOptions[appSettings.cameraType]!!,
                     options = cameraOptions.values.toList(),
@@ -94,7 +94,7 @@ fun SettingsScreen(
 //                    description = stringResource(id = R.string.setting_frame_interval_description)
                 )
 
-                SettingsSelect(
+                SelectorItem(
                     label = stringResource(id = R.string.setting_frame_interval),
                     selectedOption = frameIntervalOptions[appSettings.frameInterval]!!,
                     options = frameIntervalOptions.values.toList(),
@@ -107,7 +107,7 @@ fun SettingsScreen(
                     description = stringResource(id = R.string.setting_frame_interval_description)
                 )
 
-                SettingsSelect(
+                SelectorItem(
                     label = stringResource(id = R.string.setting_max_duration),
                     selectedOption = maxDurationOptions[appSettings.maxDuration]!!,
                     options = maxDurationOptions.values.toList(),
@@ -127,7 +127,7 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                SettingsSelect(
+                SelectorItem(
                     label = stringResource(id = R.string.setting_alert_frequency),
                     selectedOption = alertFrequencyOptions[appSettings.alertFrequency]!!,
                     options = alertFrequencyOptions.values.toList(),
@@ -140,7 +140,7 @@ fun SettingsScreen(
                     description = stringResource(id = R.string.setting_alert_frequency_description)
                 )
 
-                SettingsCard(
+                ActionItem(
                     text = stringResource(id = R.string.setting_telegram_config),
                     onClick = { onNavigate("settingsDetail/telegram") },
                     description = stringResource(id = R.string.setting_telegram_config_description)
@@ -153,11 +153,11 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                SettingsCard(
+                ActionItem(
                     text = stringResource(id = R.string.title_donate),
                     onClick = { onNavigate("donate") }
                 )
-                SettingsCard(
+                ActionItem(
                     text = stringResource(id = R.string.setting_source_code),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, sourceCodeUrl.toUri())
