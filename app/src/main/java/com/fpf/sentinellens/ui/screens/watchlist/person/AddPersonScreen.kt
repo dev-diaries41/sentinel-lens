@@ -20,7 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,9 +51,13 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel(), faceId: String?
         }
     )
 
-    LaunchedEffect(faceId) {
-        if(!faceId.isNullOrBlank()){
+    DisposableEffect(faceId) {
+        if (!faceId.isNullOrBlank()) {
             viewModel.onEditing(faceId)
+        }
+
+        onDispose {
+            viewModel.stopEditing()
         }
     }
 
