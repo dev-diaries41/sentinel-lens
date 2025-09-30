@@ -20,6 +20,7 @@
     <string name="no_logs_history">No Logs</string>
     <string name="no_logs_description">""</string>
 
+    <string name="clear_logs_alert_description">Press `OK` to clear all detection logs.</string>
 
     <!--Surveillance Screen-->
     <string name="surveillance_notice_message">Start facial recognition surveillance now and get alerts when unauthorised people are detected.</string>
@@ -38,7 +39,7 @@
 
     <!-- Settings-related strings -->
     <string name="facial_recognition_settings">Facial Recognition</string>
-    <string name="setting_surveillance_mode">Mode</string>
+    <string name="setting_surveillance_mode">Detection type</string>
     <string name="setting_mode_description">Sets detection mode. In whitelist mode, approved individuals may be misclassified.</string>
     <string name="setting_similarity_threshold">Similarity threshold</string>
     <string name="setting_similarity_threshold_description">Minimum similarity score for matching. Lower values risk false positives; higher values may miss matches.</string>

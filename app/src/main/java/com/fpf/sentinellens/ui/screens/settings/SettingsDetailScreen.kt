@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.ui.components.CustomSlider
-import com.fpf.sentinellens.ui.components.SettingsTextInput
+import com.fpf.sentinellens.ui.components.TextInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +50,7 @@ fun SettingsDetailScreen(
                 }
 
                 "telegram" -> {
-                    SettingsTextInput(
+                    TextInput(
                         label = "Channel ID",
                         value = appSettings.telegramChannelId,
                         onValueChange = { viewModel.updateTelegramChannelId(it) } ,
@@ -59,7 +59,7 @@ fun SettingsDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SettingsTextInput(
+                    TextInput(
                         label = "Bot token",
                         value = appSettings.telegramBotToken,
                         onValueChange = { viewModel.updateTelegramBotToken(it) },

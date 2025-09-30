@@ -1,6 +1,7 @@
 package com.fpf.sentinellens.ui.components
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -36,11 +39,13 @@ import androidx.compose.ui.unit.*
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.ui.draw.clip
+
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.Boolean
 
 @Composable
-fun SettingsCard(
+fun ActionItem(
     text: String,
     onClick: () -> Unit,
     description: String? = null,
@@ -59,7 +64,7 @@ fun SettingsCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(vertical = 4.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -76,18 +81,13 @@ fun SettingsCard(
             }
         }
         if (description != null) {
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = textColor,
-                fontSize = 12.sp,
-                )
+            Text(text = description, style = MaterialTheme.typography.bodyMedium, color = textColor, modifier = Modifier.fillMaxWidth(0.7f))
         }
     }
 }
 
 @Composable
-fun SettingsSwitch(
+fun SwitchItem(
     text: String,
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit),
@@ -99,7 +99,7 @@ fun SettingsSwitch(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(vertical = 4.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -122,7 +122,7 @@ fun SettingsSwitch(
 }
 
 @Composable
-fun SettingsIncrementor(
+fun IncrementorItem(
     label: String,
     value: String,
     description: String? = null,
@@ -141,7 +141,7 @@ fun SettingsIncrementor(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(vertical = 4.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -157,9 +157,10 @@ fun SettingsIncrementor(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .width(120.dp)
+                    .width(140.dp)
                     .height(40.dp)
                     .clip(RoundedCornerShape(percent = 50))
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
                     .border(
                         width = 1.dp,
                         color = MaterialTheme.colorScheme.outline,
@@ -169,26 +170,28 @@ fun SettingsIncrementor(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = {
-                        if ((value.toIntOrNull() ?: 0) > minValue) onDecrement()
-                    }) {
-                        Icon(Icons.Default.Remove,
-                            contentDescription = "Decrement",
-                        )
+                    IconButton(
+                        modifier = Modifier.size(24.dp).weight(1f),
+                        onClick = {
+                            if ((value.toIntOrNull() ?: 0) > minValue) onDecrement()
+                        }) {
+                        Icon(Icons.Default.Remove, contentDescription = "Decrement",)
                     }
 
                     Text(
                         text = value,
-                        style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = textColor,
+                        fontSize = 12.sp,
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
                     )
 
-                    IconButton(onClick = {
-                        if ((value.toIntOrNull() ?: 0) < maxValue) onIncrement()
-                    }) {
+                    IconButton(
+                        modifier = Modifier.size(24.dp).weight(1f),
+                        onClick = {
+                            if ((value.toIntOrNull() ?: 0) < maxValue) onIncrement()
+                        }) {
                         Icon(Icons.Default.Add, contentDescription = "Increment")
                     }
                 }
@@ -208,14 +211,14 @@ fun SettingsIncrementor(
 
 
 @Composable
-fun SettingsTextInput(
+fun TextInput(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
+    placeholder:  @Composable (() -> Unit)? = null,
     description: String? = null,
     enabled: Boolean = true,
-    isNumeric: Boolean = false,
-    placeholder: @Composable (() -> Unit)? = null
+    isNumeric: Boolean = false
 ) {
     val textColor = if (enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)
@@ -226,24 +229,23 @@ fun SettingsTextInput(
             .padding(4.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(text = label, style = MaterialTheme.typography.labelLarge, color = textColor)
-            TextField(
+            Text(text = label, style = MaterialTheme.typography.labelLarge, color = textColor, modifier = Modifier.padding(bottom = 4.dp))
+            OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
                 placeholder = placeholder,
                 singleLine = true,
                 enabled = enabled,
                 modifier = Modifier.fillMaxWidth(),
+                shape = shapes.small,
                 keyboardOptions = if (isNumeric) {
                     KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 } else {
                     KeyboardOptions.Default
-                },
+                }
             )
-
             if (description != null) {
                 Text(text = description, fontSize = 12.sp, color = textColor)
             }
@@ -251,14 +253,16 @@ fun SettingsTextInput(
     }
 }
 
+
 @Composable
-fun SettingsSelect(
+fun SelectorItem(
     label: String,
     options: List<String>,
     selectedOption: String,
     onOptionSelected: (String) -> Unit,
     description: String? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    showLabel: Boolean = true,
 ) {
     val textColor = if (enabled)
         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -269,22 +273,28 @@ fun SettingsSelect(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(vertical = 4.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = textColor
-            )
+            if(label.isNotEmpty() && showLabel){
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = textColor
+                )
+            }
+
             OutlinedButton(
                 onClick = { showDialog = true },
                 enabled = enabled,
-                modifier = Modifier.widthIn(max = 140.dp)
+                modifier = Modifier.widthIn(max = 140.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                )
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -301,6 +311,7 @@ fun SettingsSelect(
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "Dropdown",
+                        tint = if(enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
             }
@@ -345,7 +356,75 @@ fun SettingsSelect(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
+                TextButton (onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+
+
+@Composable
+fun SelectorIconItem(
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit,
+    enabled: Boolean = true,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton (
+                enabled = enabled,
+                onClick = { showDialog = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Dropdown",
+                    tint = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+            }
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = label) },
+            text = {
+                Column {
+                    options.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onOptionSelected(option)
+                                    showDialog = false
+                                }
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = option == selectedOption,
+                                onClick = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = option)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton (onClick = { showDialog = false }) {
                     Text("Cancel")
                 }
             }

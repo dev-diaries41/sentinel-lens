@@ -14,4 +14,8 @@ class DetectionLogRepository(private val dao: DetectionLogsDao) {
         dao.delete(id)
     }
 
+    suspend fun clear(){
+        dao.deleteAll()
+    }
+
 }
