@@ -5,22 +5,27 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.view.Surface
 import androidx.core.app.NotificationCompat
 import com.fpf.sentinellens.MainActivity
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.lib.Storage
 import com.fpf.sentinellens.lib.camera.IMlVideoCaptureListener
 import com.fpf.sentinellens.lib.camera.VideoCaptureHelper
 import com.fpf.sentinellens.lib.camera.VideoCaptureListener
+import com.fpf.sentinellens.lib.showNotification
 import com.fpf.sentinellens.ui.screens.settings.AppSettings
 import kotlinx.serialization.json.Json
 
 class SurveillanceForegroundService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 102
+        const val MODE = "mode"
+
         var previewSurface: Surface? = null
 
         fun updatePreviewSurface(surface: Surface) {
@@ -35,35 +40,6 @@ class SurveillanceForegroundService : Service() {
         super.onCreate()
         createNotificationChannel()
         startForegroundServiceNotification()
-
-        val storage = Storage.getInstance(application)
-        val jsonSettings = storage.getItem("app_settings")
-        val appSettings = if (jsonSettings != null) {
-            try {
-                Json.decodeFromString<AppSettings>(jsonSettings)
-            } catch (e: Exception) {
-                Log.e("Settings", "Failed to decode settings", e)
-                AppSettings()
-            }
-        } else {
-            AppSettings()
-        }
-
-        videoCaptureListener = VideoCaptureListener(
-            application,
-            threshold = appSettings.similarityThreshold,
-            alertFrequency = appSettings.alertFrequency,
-            telegramBotToken = appSettings.telegramBotToken,
-            telegramChannelId = appSettings.telegramChannelId,
-            mode = appSettings.mode
-        )
-        videoCaptureHelper = VideoCaptureHelper(this,
-            listener = videoCaptureListener,
-            isFrameProcessingActive = true,
-            frameInterval = appSettings.frameInterval,
-            maxDuration = appSettings.maxDuration,
-            lensFacing = appSettings.cameraType
-        )
     }
 
     private fun startForegroundServiceNotification() {
@@ -93,8 +69,20 @@ class SurveillanceForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        previewSurface?.let{ videoCaptureHelper.setPreviewSurface(surface = it) }
-        videoCaptureHelper.startCameraAndRecording()
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            intent?.getSerializableExtra(MODE, FaceType::class.java)
+        }else{
+            intent?.getSerializableExtra(MODE) as? FaceType
+        }
+
+        if(mode == null){
+            showNotification(application, "Error starting surveillance", "Unable to setup video capturer")
+        }else{
+            setupVideoCapturer(mode)
+            previewSurface?.let{ videoCaptureHelper.setPreviewSurface(surface = it) }
+            videoCaptureHelper.startCameraAndRecording()
+        }
+
         return START_NOT_STICKY
     }
 
@@ -105,4 +93,35 @@ class SurveillanceForegroundService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun setupVideoCapturer(mode: FaceType){
+        val storage = Storage.getInstance(application)
+        val jsonSettings = storage.getItem("app_settings")
+        val appSettings = if (jsonSettings != null) {
+            try {
+                Json.decodeFromString<AppSettings>(jsonSettings)
+            } catch (e: Exception) {
+                Log.e("Settings", "Failed to decode settings", e)
+                AppSettings()
+            }
+        } else {
+            AppSettings()
+        }
+
+        videoCaptureListener = VideoCaptureListener(
+            application,
+            threshold = appSettings.similarityThreshold,
+            alertFrequency = appSettings.alertFrequency,
+            telegramBotToken = appSettings.telegramBotToken,
+            telegramChannelId = appSettings.telegramChannelId,
+            mode = mode
+        )
+        videoCaptureHelper = VideoCaptureHelper(this,
+            listener = videoCaptureListener,
+            isFrameProcessingActive = true,
+            frameInterval = appSettings.frameInterval,
+            maxDuration = appSettings.maxDuration,
+            lensFacing = appSettings.cameraType
+        )
+    }
 }
