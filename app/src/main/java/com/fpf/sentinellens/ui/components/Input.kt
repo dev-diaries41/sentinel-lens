@@ -44,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -213,6 +214,7 @@ fun TextInput(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
+    placeholder:  @Composable (() -> Unit)? = null,
     description: String? = null,
     enabled: Boolean = true,
     isNumeric: Boolean = false
@@ -235,6 +237,7 @@ fun TextInput(
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
+                placeholder = placeholder,
                 singleLine = true,
                 enabled = enabled,
                 modifier = Modifier
