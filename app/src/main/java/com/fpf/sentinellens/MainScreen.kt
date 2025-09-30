@@ -111,7 +111,7 @@ fun MainScreen() {
             }
 
             composable("addPerson/{faceId}",
-                arguments = listOf(navArgument("faceId") { type = NavType.StringType; defaultValue = null; nullable = true }
+                arguments = listOf(navArgument("faceId") { type = NavType.StringType }
                 )
             ) { navBackStackEntry ->
                 val faceId = navBackStackEntry.arguments?.getString("faceId")?.let {
