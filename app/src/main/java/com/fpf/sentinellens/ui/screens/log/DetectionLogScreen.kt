@@ -35,7 +35,7 @@ fun DetectionLogScreen(viewModel: DetectionLogViewModel = viewModel()) {
         AlertDialog(
             onDismissRequest = { },
             title = { Text("Clear logs") },
-            text = { Text("Press 'OK' to clear all detection logs.") },
+            text = { Text(stringResource(R.string.clear_logs_alert_description)) },
             dismissButton = {
                 TextButton(onClick = {
                     viewModel.toggleAlert()
