@@ -9,6 +9,11 @@ class FacesRepository(private val dao: FacesDao) {
     suspend fun getAllFacesSync(): List<Face> {
         return dao.getAllFacesSync()
     }
+
+    suspend fun getFace(id: String): Face{
+        return dao.getFace(id)
+    }
+
     suspend fun insert(face: Face) {
         dao.insertFace(face)
     }
