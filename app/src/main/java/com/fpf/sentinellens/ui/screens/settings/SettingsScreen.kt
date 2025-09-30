@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.net.toUri
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.ui.components.ActionItem
 import com.fpf.sentinellens.ui.components.SelectorItem
 
@@ -54,19 +53,6 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(vertical = 8.dp),
                     color = MaterialTheme.colorScheme.primary
-                )
-
-                SelectorItem(
-                    label = stringResource(id = R.string.setting_surveillance_mode),
-                    selectedOption = DetectionTypes[appSettings.mode]!!,
-                    options = DetectionTypes.values.toList(),
-                    onOptionSelected = { option ->
-                        val selected = DetectionTypes.entries
-                            .find { it.value == option }
-                            ?.key ?: DetectionTypes.keys.first()
-                        viewModel.updateMode(selected)
-                    },
-//                    description = stringResource(id = R.string.setting_mode_description)
                 )
 
                 ActionItem(
