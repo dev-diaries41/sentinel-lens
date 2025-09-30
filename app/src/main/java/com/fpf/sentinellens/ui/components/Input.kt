@@ -260,6 +260,7 @@ fun SelectorItem(
     options: List<String>,
     selectedOption: String,
     onOptionSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
     description: String? = null,
     enabled: Boolean = true,
     showLabel: Boolean = true,
@@ -271,7 +272,7 @@ fun SelectorItem(
     var showDialog by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     ) {
