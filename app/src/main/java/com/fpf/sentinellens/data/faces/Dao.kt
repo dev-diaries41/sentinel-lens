@@ -18,6 +18,8 @@ interface FacesDao {
     @Query("SELECT * FROM faces ORDER BY date DESC")
     suspend fun getAllFacesSync(): List<Face>
 
+    @Query("UPDATE faces SET id = :newId WHERE id = :oldId")
+    suspend fun updateFaceId(oldId: String, newId: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFace(face: Face)
