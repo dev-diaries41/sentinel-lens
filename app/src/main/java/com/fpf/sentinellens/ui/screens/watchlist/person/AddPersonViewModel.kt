@@ -106,7 +106,7 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
                 val faceEmbeddings = faceComparer.embed(faces[0])
                 val filePath = "faces/${newFaceImage.toString().hashCode()}.jpg"
                 val file = File(getApplication<Application>().filesDir, filePath)
-                val saved = saveImageLocally(getApplication(), faces[0], file)
+                val saved = saveImageLocally(faces[0], file)
 
                 if (saved) {
                     _error.postValue("Error saving face image")
