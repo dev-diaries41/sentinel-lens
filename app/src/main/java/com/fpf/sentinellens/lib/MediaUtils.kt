@@ -112,7 +112,8 @@ suspend fun loadBitmapFromLocalPath(
 ): Bitmap? {
     return withContext(Dispatchers.IO) {
         BitmapCache.get(path) ?: try {
-            val bitmap = loadLocalImage(context, path)
+            val file = File(context.filesDir, path)
+            val bitmap = loadLocalImage(file)
             if(bitmap != null){
                 BitmapCache.put(path, bitmap)
             }
