@@ -70,5 +70,8 @@
     <string name="notif_surveillance_foreground_content">Camera is recording video in foreground</string>
     <string name="notif_detection_title">Unauthorized person detected</string>
     <string name="notif_detection_content">Configure telegram in settings to receive telegram alerts instead.</string>
+    <string name="notif_alert_error_title">Error sending alert</string>
+    <string name="notif_alert_error_content">The Telegram alert failed to send. Make sure your Channel ID and Bot token are configured correctly in settings.</string>
+
 
 </resources>
