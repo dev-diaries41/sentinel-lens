@@ -5,40 +5,52 @@ import android.app.Application
 import android.content.Intent
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.FaceDatabase
+import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.services.SurveillanceForegroundService
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class SurveillanceViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
     val hasAnyFaces = repository.hasAnyFaces
 
-    private val _hasPermissions = MutableLiveData<Boolean>(false)
-    val hasPermissions: LiveData<Boolean> = _hasPermissions
+    private val _hasPermissions = MutableStateFlow(false)
+    val hasPermissions: StateFlow<Boolean> = _hasPermissions
 
-    private val _isSurveillanceActive = MutableLiveData<Boolean>(false)
-    val isSurveillanceActive: LiveData<Boolean> = _isSurveillanceActive
+    private val _isSurveillanceActive = MutableStateFlow(false)
+    val isSurveillanceActive: StateFlow<Boolean> = _isSurveillanceActive
+
+    private val _detectionMode = MutableStateFlow(FaceType.BLACKLIST)
+    val detectionMode: StateFlow<FaceType> = _detectionMode
 
     fun checkPermissions(notifications: Boolean, camera: Boolean) {
         if ( camera) {
             _hasPermissions.value = true
         }else{
-            Toast.makeText(getApplication<Application>(), "Missing camera permission", Toast.LENGTH_SHORT).show()
+            Toast.makeText(getApplication(), "Missing camera permission", Toast.LENGTH_SHORT).show()
         }
     }
 
+    fun updateDetectionMode(mode: FaceType){
+        _detectionMode.value = mode
+    }
+
     fun startSurveillance() {
-        if (_hasPermissions.value == true) {
+        if (_hasPermissions.value) {
             _isSurveillanceActive.value = true
-            getApplication<Application>().startForegroundService(Intent(getApplication<Application>(), SurveillanceForegroundService::class.java))
+            Intent(getApplication(), SurveillanceForegroundService::class.java).putExtra(SurveillanceForegroundService.MODE, _detectionMode.value
+            ).also{
+                intent -> getApplication<Application>().startForegroundService(intent)
+            }
         }
     }
 
     @SuppressLint("ImplicitSamInstance")
     fun stopSurveillance() {
         _isSurveillanceActive.value = false
-        getApplication<Application>().stopService(Intent(getApplication<Application>(), SurveillanceForegroundService::class.java))
+        getApplication<Application>().stopService(Intent(getApplication(), SurveillanceForegroundService::class.java))
     }
 }

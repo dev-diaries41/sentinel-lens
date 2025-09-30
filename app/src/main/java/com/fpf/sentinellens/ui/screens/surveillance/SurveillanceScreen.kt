@@ -2,9 +2,8 @@ package com.fpf.sentinellens.ui.screens.surveillance
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -26,7 +26,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +33,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.data.faces.DetectionTypes
+import com.fpf.sentinellens.ui.components.SelectorItem
 import com.fpf.sentinellens.ui.permissions.RequestPermissions
 import com.fpf.sentinellens.ui.theme.Green500
 
@@ -42,8 +43,9 @@ fun SurveillanceScreen(
     viewModel: SurveillanceViewModel = viewModel(),
 ) {
     val hasAnyFaces by viewModel.hasAnyFaces.observeAsState()
-    val hasPermissions by viewModel.hasPermissions.observeAsState(false)
-    val isSurveillanceActive by viewModel.isSurveillanceActive.observeAsState()
+    val hasPermissions by viewModel.hasPermissions.collectAsState(false)
+    val isSurveillanceActive by viewModel.isSurveillanceActive.collectAsState()
+    val detectionMode by viewModel.detectionMode.collectAsState()
     val scrollState = rememberScrollState()
 
     RequestPermissions { notificationGranted, cameraGranted ->
@@ -51,41 +53,55 @@ fun SurveillanceScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
-        if (isSurveillanceActive == true) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .background(
-                        color = Green500,
-                        shape = RoundedCornerShape(50)
-                    )
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(Color.White, CircleShape)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "LIVE",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White
-                )
-            }
-        }
+
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                SelectorItem(
+                    label = stringResource(id = R.string.setting_surveillance_mode),
+                    showLabel = false,
+                    selectedOption = DetectionTypes[detectionMode]!!,
+                    options = DetectionTypes.values.toList(),
+                    onOptionSelected = { option ->
+                        val selected = DetectionTypes.entries
+                            .find { it.value == option }
+                            ?.key ?: DetectionTypes.keys.first()
+                        viewModel.updateDetectionMode(selected)
+                    },
+                    modifier = Modifier.fillMaxWidth(0.7f)
+                )
+                if (isSurveillanceActive) {
+                    Row(
+                        modifier = Modifier
+                            .background(
+                                color = Green500,
+                                shape = RoundedCornerShape(50)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(Color.White, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "LIVE",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -128,10 +144,10 @@ fun SurveillanceScreen(
         }
 
         RecordButton(
-            isRecording = isSurveillanceActive == true,
+            isRecording = isSurveillanceActive,
             enabled = hasPermissions && hasAnyFaces == true,
             onClick = {
-                if (isSurveillanceActive == true) viewModel.stopSurveillance()
+                if (isSurveillanceActive) viewModel.stopSurveillance()
                 else viewModel.startSurveillance()
             },
             modifier = Modifier
