@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -16,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -26,21 +28,48 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.ui.components.SwipeableCard
+import com.fpf.sentinellens.data.faces.Face
 
 
 @Composable
 fun WatchlistScreen(
     viewModel: WatchlistViewModel = viewModel(),
-    onNavigate: () -> Unit,
+    onNavigate: (String?) -> Unit,
 ) {
     val faceList by viewModel.faceList.observeAsState(emptyList())
     val listState = rememberLazyListState()
+    var selectedFace by remember { mutableStateOf<Face?>(null) }
+    var isDeleteAlertVisible by remember { mutableStateOf(false) }
+
+    if(isDeleteAlertVisible && selectedFace != null){
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text("Delete ${selectedFace!!.name}") },
+            text = { Text(stringResource(R.string.delete_face_alert_description)) },
+            dismissButton = {
+                TextButton(onClick = {
+                    isDeleteAlertVisible = false
+                    selectedFace = null
+                }) {
+                    Text("Cancel")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    isDeleteAlertVisible = false
+                    selectedFace?.let{viewModel.deleteFace(it.id) }
+                    selectedFace = null
+                }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNavigate() },
+                onClick = { onNavigate(null) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 shape = shapes.extraLarge
             ) {
@@ -69,10 +98,13 @@ fun WatchlistScreen(
                         items = faceList,
                         key = { it.id }
                     ) { item ->
-                        SwipeableCard(
+                        WatchlistItemCard(
                             data = item,
-                            onDelete = { viewModel.deleteFace(item.id) },
-                            item = { WatchlistItemCard(data = item) }
+                            onEdit = {onNavigate(item.id)},
+                            onDelete = {
+                                isDeleteAlertVisible = true
+                                selectedFace = item
+                                       },
                         )
                     }
                 }
@@ -83,7 +115,7 @@ fun WatchlistScreen(
 
 @Composable
 fun EmptyPersonScreen(
-    onNavigate: () -> Unit,
+    onNavigate: (String?) -> Unit,
 
     ) {
     Box(
@@ -116,7 +148,7 @@ fun EmptyPersonScreen(
                     .padding(vertical = 8.dp)
             )
             Button(
-                onClick = {onNavigate()}
+                onClick = {onNavigate(null)}
             ) {
                 Text("Add person")
             }
