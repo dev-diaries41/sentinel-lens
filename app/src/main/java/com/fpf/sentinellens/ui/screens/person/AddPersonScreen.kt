@@ -25,14 +25,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.ui.components.MediaStoreImage
-import com.fpf.sentinellens.ui.components.SettingsSelect
-import com.fpf.sentinellens.ui.components.SettingsTextInput
+import com.fpf.sentinellens.ui.components.SelectorItem
+import com.fpf.sentinellens.ui.components.TextInput
 
 @Composable
 fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
@@ -88,7 +90,7 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        SettingsTextInput(
+        TextInput(
             label = "Name",
             value = newName,
             onValueChange = { viewModel.updateName(it) },
@@ -97,8 +99,9 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        SettingsSelect(
-            label = "",
+        SelectorItem(
+            label = stringResource(id = R.string.setting_surveillance_mode),
+            showLabel = false,
             selectedOption = DetectionTypes[faceType]!!,
             options = DetectionTypes.values.toList(),
             onOptionSelected = { option ->
