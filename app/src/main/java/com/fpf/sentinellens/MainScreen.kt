@@ -23,6 +23,9 @@ import com.fpf.sentinellens.ui.screens.test.TestFaceIdScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsDetailScreen
 import com.fpf.sentinellens.ui.screens.surveillance.SurveillanceScreen
 import com.fpf.sentinellens.ui.screens.surveillance.SurveillanceViewModel
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +37,7 @@ fun MainScreen() {
     val typeVal = navBackStackEntry?.arguments?.getString("type")
     val settingsViewModel: SettingsViewModel = viewModel()
     val surveillanceViewModel: SurveillanceViewModel = viewModel()
-    val showBackButton = currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute == "addPerson"
+    val showBackButton = currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute?.startsWith("addPerson") == true
 
 
     val headerTitle = when {
@@ -42,7 +45,7 @@ fun MainScreen() {
         currentRoute == "donate" -> stringResource(R.string.title_donate)
         currentRoute == "test" -> stringResource(R.string.title_face_id)
         currentRoute == "watchlist" -> stringResource(R.string.title_watchlist)
-        currentRoute == "addPerson" -> stringResource(R.string.title_add_person)
+        currentRoute?.startsWith("addPerson") == true -> stringResource(R.string.title_add_person)
         currentRoute == "surveillance" -> stringResource(R.string.title_surveillance)
         currentRoute == "log" -> stringResource(R.string.title_log)
         currentRoute?.startsWith("settingsDetail") == true -> when (typeVal) {
@@ -101,17 +104,19 @@ fun MainScreen() {
             composable("watchlist") {
                 WatchlistScreen(
                     onNavigate = { faceId: String? ->
-                        val route = faceId?.let { "addPerson/$it" } ?: "addPerson"
-                        navController.navigate(route)
+                        val encoded = faceId?.let { URLEncoder.encode(it, StandardCharsets.UTF_8.toString()) } ?: ""
+                        navController.navigate("addPerson/$encoded")
                     }
                 )
             }
 
-            composable("addPerson/{faceId?}",
+            composable("addPerson/{faceId}",
                 arguments = listOf(navArgument("faceId") { type = NavType.StringType; defaultValue = null; nullable = true }
                 )
             ) { navBackStackEntry ->
-                val faceId = navBackStackEntry.arguments?.getString("faceId")
+                val faceId = navBackStackEntry.arguments?.getString("faceId")?.let {
+                    URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                }
                 AddPersonScreen(faceId = faceId)
             }
 
