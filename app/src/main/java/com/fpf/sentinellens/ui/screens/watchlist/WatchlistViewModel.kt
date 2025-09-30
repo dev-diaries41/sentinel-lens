@@ -8,9 +8,9 @@ import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.Storage
-import com.fpf.sentinellens.lib.deleteLocalFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 
 class WatchlistViewModel(application: Application) : AndroidViewModel(application)  {
     private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
@@ -30,7 +30,8 @@ class WatchlistViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             repository.delete(id)
             val filePath = "faces/${id.hashCode()}.jpg"
-            deleteLocalFile(getApplication(), filePath)
+            val file = File(getApplication<Application>().filesDir, filePath)
+            file.delete()
         }
     }
 }
