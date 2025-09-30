@@ -41,10 +41,11 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.Placeholder
+
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -227,21 +228,18 @@ fun TextInput(
             .fillMaxWidth()
             .padding(4.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(text = label, style = MaterialTheme.typography.labelLarge, color = textColor)
+            Text(text = label, style = MaterialTheme.typography.labelLarge, color = textColor, modifier = Modifier.padding(bottom = 4.dp))
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
                 placeholder = placeholder,
                 singleLine = true,
                 enabled = enabled,
-                modifier = Modifier
-                    .width(80.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = shapes.small,
                 keyboardOptions = if (isNumeric) {
                     KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 } else {
