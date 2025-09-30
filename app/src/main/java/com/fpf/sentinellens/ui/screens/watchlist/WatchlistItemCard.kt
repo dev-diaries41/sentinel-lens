@@ -32,6 +32,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FaceType
@@ -44,7 +45,6 @@ fun WatchlistItemCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val filePath = "faces/${data.id.hashCode()}.jpg"
     var expanded by remember { mutableStateOf(false) }
 
     Card (
@@ -58,7 +58,7 @@ fun WatchlistItemCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             MediaStoreImage(
-                path = filePath,
+                uri = data.id.toUri(),
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(64.dp)
