@@ -84,7 +84,7 @@ fun WatchlistScreen(
             modifier = Modifier.padding(16.dp)
         ) {
             if (faceList.isEmpty()) {
-                EmptyPersonScreen(onNavigate)
+                EmptyPersonScreen()
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -114,14 +114,10 @@ fun WatchlistScreen(
 }
 
 @Composable
-fun EmptyPersonScreen(
-    onNavigate: (String?) -> Unit,
-
-    ) {
+fun EmptyPersonScreen() {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Column (
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -131,8 +127,7 @@ fun EmptyPersonScreen(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Person icon",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(100.dp)
+                modifier = Modifier.size(100.dp)
             )
             Text(
                 text = stringResource(R.string.no_entries),
@@ -143,15 +138,8 @@ fun EmptyPersonScreen(
                 text = stringResource(R.string.no_entries_description),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .alpha(0.8f)
-                    .padding(vertical = 8.dp)
+                modifier = Modifier.alpha(0.8f).padding(vertical = 8.dp)
             )
-            Button(
-                onClick = {onNavigate(null)}
-            ) {
-                Text("Add person")
-            }
         }
     }
 }
