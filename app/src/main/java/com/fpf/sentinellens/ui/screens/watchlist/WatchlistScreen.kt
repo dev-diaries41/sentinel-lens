@@ -24,7 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.data.faces.Face
@@ -92,9 +95,7 @@ fun PersonCard(data: Face) {
 
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(8.dp).fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) {
             MediaStoreImage(
@@ -107,18 +108,27 @@ fun PersonCard(data: Face) {
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = data.name,
+                    text = "Name: ${data.name}",
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = DetectionTypes[data.type]!!,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = when(data.type){
-                        FaceType.BLACKLIST -> Color.Red
-                        FaceType.WHITELIST -> Color.Green
-                    }
+                    buildAnnotatedString {
+                        append("Detection type: ")
+                        withStyle(
+                            style = SpanStyle(
+                                color = when (data.type) {
+                                    FaceType.BLACKLIST -> Color.Red
+                                    FaceType.WHITELIST -> Color.Green
+                                }
+                            )
+                        ) {
+                            append(DetectionTypes[data.type]!!)
+                        }
+                    },
+                    style = MaterialTheme.typography.bodyMedium
                 )
+
             }
         }
     }
