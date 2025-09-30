@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class AddPersonViewModel(application: Application) : AndroidViewModel(application)  {
     val faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
@@ -104,9 +105,10 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
 
                 val faceEmbeddings = faceComparer.embed(faces[0])
                 val filePath = "faces/${newFaceImage.toString().hashCode()}.jpg"
-                val file = saveImageLocally(getApplication(), faces[0], filePath)
+                val file = File(getApplication<Application>().filesDir, filePath)
+                val saved = saveImageLocally(getApplication(), faces[0], file)
 
-                if (file == null) {
+                if (saved) {
                     _error.postValue("Error saving face image")
                     return@launch
                 }
