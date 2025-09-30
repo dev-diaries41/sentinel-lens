@@ -37,7 +37,7 @@ import com.fpf.sentinellens.ui.components.SelectorItem
 import com.fpf.sentinellens.ui.components.TextInput
 
 @Composable
-fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
+fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel(), faceId: String? = null) {
     val newName by viewModel.newName.observeAsState("")
     val newFaceImage by viewModel.newFaceImage.observeAsState(null)
     val faceType by viewModel.faceType.observeAsState(FaceType.BLACKLIST)

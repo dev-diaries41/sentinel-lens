@@ -15,7 +15,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.fpf.sentinellens.ui.screens.donate.DonateScreen
 import com.fpf.sentinellens.ui.screens.log.DetectionLogScreen
-import com.fpf.sentinellens.ui.screens.person.AddPersonScreen
+import com.fpf.sentinellens.ui.screens.watchlist.person.AddPersonScreen
 import com.fpf.sentinellens.ui.screens.watchlist.WatchlistScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
@@ -98,16 +98,23 @@ fun MainScreen() {
             composable("surveillance"){
                 SurveillanceScreen(viewModel = surveillanceViewModel)
             }
-            composable("watchlist"){
+            composable("watchlist") {
                 WatchlistScreen(
-                    onNavigate = {
-                        navController.navigate("addPerson")
+                    onNavigate = { faceId: String? ->
+                        val route = faceId?.let { "addPerson/$it" } ?: "addPerson"
+                        navController.navigate(route)
                     }
                 )
             }
-            composable("addPerson") {
-                AddPersonScreen()
+
+            composable("addPerson/{faceId?}",
+                arguments = listOf(navArgument("faceId") { type = NavType.StringType; defaultValue = null; nullable = true }
+                )
+            ) { navBackStackEntry ->
+                val faceId = navBackStackEntry.arguments?.getString("faceId")
+                AddPersonScreen(faceId = faceId)
             }
+
 
             composable("log") {
                 DetectionLogScreen()
@@ -119,9 +126,7 @@ fun MainScreen() {
             composable("settings") {
                 SettingsScreen(
                     viewModel = settingsViewModel,
-                    onNavigate = { route: String ->
-                        navController.navigate(route)
-                    }
+                    onNavigate = { route: String -> navController.navigate(route) }
                 )
             }
             composable(
