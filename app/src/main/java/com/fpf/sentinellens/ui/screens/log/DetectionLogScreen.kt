@@ -20,8 +20,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
@@ -34,6 +37,30 @@ import com.fpf.sentinellens.lib.toDateString
 @Composable
 fun DetectionLogScreen(viewModel: DetectionLogViewModel = viewModel()) {
     val items by viewModel.log.collectAsState(emptyList())
+    val isClearLogsAlertVisible by viewModel.isClearLogsAlertVisible.collectAsState()
+
+    if ( isClearLogsAlertVisible) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text("Clear logs") },
+            text = { Text("Press 'OK' to clear all detection logs.") },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.toggleAlert()
+                }) {
+                    Text("Cancel")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.toggleAlert()
+                    viewModel.clearLogs()
+                }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     if (items.isEmpty()) {
         EmptyLogScreen()
@@ -42,6 +69,17 @@ fun DetectionLogScreen(viewModel: DetectionLogViewModel = viewModel()) {
             modifier = Modifier.padding(16.dp)
         ) {
             Column {
+                Row(
+                    modifier = Modifier.padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Button (
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        onClick = {viewModel.toggleAlert()}
+                    ) {
+                        Text(text = "Clear logs")
+                    }
+                }
                 LazyColumn{
                     items(
                         items = items,
