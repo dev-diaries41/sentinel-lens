@@ -20,6 +20,7 @@
     <string name="no_logs_history">No Logs</string>
     <string name="no_logs_description">""</string>
 
+    <string name="clear_logs_alert_description">Press `OK` to clear all detection logs.</string>
 
     <!--Surveillance Screen-->
     <string name="surveillance_notice_message">Start facial recognition surveillance now and get alerts when unauthorised people are detected.</string>
