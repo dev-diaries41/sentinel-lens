@@ -102,9 +102,10 @@ class VideoCaptureListener(
         var bestMatch = -1f
 
         if(!blackList.isNullOrEmpty() && mode == FaceType.BLACKLIST){
-            detectedFacesEmbeddings.forEach{
-                val blacklistSimilarities = getSimilarities(it, blackList!!.map{it.embeddings} )
-                val bestIndex = getTopN(blacklistSimilarities, 1).first()
+            detectedFacesEmbeddings.forEach{faceEmbedding ->
+                val blacklistSimilarities = getSimilarities(faceEmbedding, blackList!!.map{it.embeddings} )
+                val bestIndex = getTopN(blacklistSimilarities, 1).firstOrNull()
+                if(bestIndex == null) return
                 val similarity = blacklistSimilarities[bestIndex]
                 if(similarity > bestMatch){
                     bestMatch = similarity
@@ -118,9 +119,10 @@ class VideoCaptureListener(
         }
 
         if(!whiteList.isNullOrEmpty() && mode == FaceType.WHITELIST){
-            detectedFacesEmbeddings.forEach{
-                val whitelistSimilarities = getSimilarities(it, whiteList!!.map{it.embeddings} )
-                val bestIndex = getTopN(whitelistSimilarities, 1).first()
+            detectedFacesEmbeddings.forEach{ faceEmbedding ->
+                val whitelistSimilarities = getSimilarities(faceEmbedding, whiteList!!.map{it.embeddings} )
+                val bestIndex = getTopN(whitelistSimilarities, 1).firstOrNull()
+                if(bestIndex == null) return
                 val similarity = whitelistSimilarities[bestIndex]
                 if(similarity > bestMatch){
                     bestMatch = similarity
