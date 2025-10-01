@@ -1,3 +1,16 @@
+## v1.0.2 – 01/10/2025
+
+### Added
+* Added detection logs screen
+* Added help screen
+* Enable editing person in watchlist
+
+### Fixed
+* Fix bug that causes UI freezing when saving long videos
+
+### Changed
+* General UI improvements
+
 ## v1.0.1 – 26/04/2025
 
 ### Fixed
