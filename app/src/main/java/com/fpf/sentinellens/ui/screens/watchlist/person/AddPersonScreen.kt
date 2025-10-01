@@ -33,7 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.FaceType
-import com.fpf.sentinellens.ui.components.MediaStoreImage
+import com.fpf.sentinellens.ui.components.ImageDisplay
 import com.fpf.sentinellens.ui.components.SelectorItem
 import com.fpf.sentinellens.ui.components.TextInput
 
@@ -74,7 +74,7 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel(), faceId: String?
                 .clickable { imagePickerLauncher.launch("image/*") }
         ) {
             if (newFaceImage != null) {
-                MediaStoreImage(
+                ImageDisplay(
                     uri = newFaceImage!!,
                     modifier = Modifier.matchParentSize(),
                     contentScale = ContentScale.Crop
