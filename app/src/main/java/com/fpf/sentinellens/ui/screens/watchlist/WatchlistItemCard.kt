@@ -63,7 +63,7 @@ fun WatchlistItemCard(
                     .padding(end = 16.dp)
                     .size(64.dp)
                     .clip(CircleShape),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
             )
             Column(modifier = Modifier.weight(1f)) {
                 Row(
