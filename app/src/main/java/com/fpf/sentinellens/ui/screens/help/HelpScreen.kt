@@ -35,7 +35,7 @@ fun HelpScreen() {
 
             Text(
                 text = stringResource(id = R.string.help_title_telegram),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
             Spacer(Modifier.height(8.dp))
             BulletPoint(stringResource(id = R.string.help_description_telegram_1))
