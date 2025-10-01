@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -42,7 +41,7 @@ import com.fpf.sentinellens.ui.theme.Green500
 fun SurveillanceScreen(
     viewModel: SurveillanceViewModel = viewModel(),
 ) {
-    val hasAnyFaces by viewModel.hasAnyFaces.observeAsState()
+    val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
     val hasPermissions by viewModel.hasPermissions.collectAsState(false)
     val isSurveillanceActive by viewModel.isSurveillanceActive.collectAsState()
     val detectionMode by viewModel.detectionMode.collectAsState()
