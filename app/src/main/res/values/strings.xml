@@ -76,5 +76,6 @@
 
     <!--Updates-->
     <string name="update_logs">Add screen for logs.</string>
+    <string name="update_person_edits">Enable editing person in watchlist.</string>
     <string name="update_video_saving">Fix bug that causes UI freezing when saving long videos.</string>
 </resources>
