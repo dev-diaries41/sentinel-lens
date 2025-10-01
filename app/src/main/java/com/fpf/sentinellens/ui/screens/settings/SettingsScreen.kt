@@ -144,6 +144,10 @@ fun SettingsScreen(
                     onClick = { onNavigate("donate") }
                 )
                 ActionItem(
+                    text = stringResource(id = R.string.title_help),
+                    onClick = { onNavigate("help") }
+                )
+                ActionItem(
                     text = stringResource(id = R.string.setting_source_code),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, sourceCodeUrl.toUri())

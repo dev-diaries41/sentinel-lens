@@ -15,6 +15,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.fpf.sentinellens.ui.components.UpdatePopUp
 import com.fpf.sentinellens.ui.screens.donate.DonateScreen
+import com.fpf.sentinellens.ui.screens.help.HelpScreen
 import com.fpf.sentinellens.ui.screens.log.DetectionLogScreen
 import com.fpf.sentinellens.ui.screens.watchlist.person.AddPersonScreen
 import com.fpf.sentinellens.ui.screens.watchlist.WatchlistScreen
@@ -49,6 +50,7 @@ fun MainScreen() {
     val headerTitle = when {
         currentRoute == "settings" -> stringResource(R.string.title_settings)
         currentRoute == "donate" -> stringResource(R.string.title_donate)
+        currentRoute == "help" -> stringResource(R.string.title_help)
         currentRoute == "test" -> stringResource(R.string.title_face_id)
         currentRoute == "watchlist" -> stringResource(R.string.title_watchlist)
         currentRoute?.startsWith("addPerson") == true -> stringResource(R.string.title_add_person)
@@ -138,14 +140,14 @@ fun MainScreen() {
                     }
                     AddPersonScreen(faceId = faceId)
                 }
-
-
                 composable("log") {
                     DetectionLogScreen()
                 }
-
                 composable("donate") {
                     DonateScreen()
+                }
+                composable("help") {
+                    HelpScreen()
                 }
                 composable("settings") {
                     SettingsScreen(
