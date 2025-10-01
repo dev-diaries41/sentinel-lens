@@ -1,8 +1,9 @@
-package com.fpf.sentinellens.ui.screens.person
+package com.fpf.sentinellens.ui.screens.watchlist.person
 
 import android.app.Application
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -20,7 +21,9 @@ import com.fpf.sentinellens.lib.saveImageLocally
 import com.fpf.smartscansdk.core.ml.models.ResourceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class AddPersonViewModel(application: Application) : AndroidViewModel(application)  {
     val faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
@@ -28,18 +31,19 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
 
-    private val _newName =  MutableLiveData<String>("")
+    private val _newName =  MutableLiveData("")
     val newName:LiveData<String> = _newName
 
     private val _newFaceImage = MutableLiveData<Uri?>(null)
     val newFaceImage: LiveData<Uri?> = _newFaceImage
 
-    private val _faceType = MutableLiveData<FaceType>(FaceType.BLACKLIST)
+    private val _faceType = MutableLiveData(FaceType.BLACKLIST)
     val faceType: LiveData<FaceType> = _faceType
 
     private val _error = MutableLiveData<String?>(null)
     val error: LiveData<String?> = _error
 
+    private val _isEditing = MutableStateFlow(false)
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
@@ -49,16 +53,16 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun updateName(name: String){
-        _newName.value = name
+        _newName.postValue(name)
     }
 
     fun updateFaceImage(uri: Uri){
-        _error.value = null
-        _newFaceImage.value = uri
+        _error.postValue(null)
+        _newFaceImage.postValue(uri)
     }
 
-    fun updateFaceType(type: FaceType){
-        _faceType.value = type
+    fun updateDetectionType(type: FaceType){
+        _faceType.postValue(type)
     }
 
     fun reset(){
@@ -66,7 +70,25 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
         _newFaceImage.postValue(null)
     }
 
-    fun addFace(name: String, newFaceImage: Uri, type: FaceType){
+    fun onEditing(faceId: String){
+        _isEditing.value = true
+        viewModelScope.launch(Dispatchers.IO){
+            val faceToEdit = repository.getFace(faceId)
+            updateFaceImage(faceId.toUri())
+            updateName(faceToEdit.name)
+            updateDetectionType(faceToEdit.type)
+        }
+    }
+
+    fun stopEditing(){
+        _isEditing.value = false
+    }
+
+    fun addFace(){
+        val name = _newName.value ?: return
+        val newFaceImage = _newFaceImage.value ?: return
+        val type = _faceType.value?: return
+
         viewModelScope.launch {
             try {
                 if(!faceDetector.isInitialized() || !faceComparer.isInitialized()){
@@ -83,15 +105,18 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
 
                 val faceEmbeddings = faceComparer.embed(faces[0])
                 val filePath = "faces/${newFaceImage.toString().hashCode()}.jpg"
-                val saved = saveImageLocally(getApplication(), faces[0], filePath)
+                val file = File(getApplication<Application>().filesDir, filePath)
+                val saved = saveImageLocally(faces[0], file)
 
-                if (!saved) {
+                if (saved) {
                     _error.postValue("Error saving face image")
                     return@launch
                 }
 
+                val id = if(_isEditing.value) newFaceImage.toString() else file.toUri().toString()
+
                 repository.insert(Face(
-                    id = newFaceImage.toString(),
+                    id = id,
                     date = System.currentTimeMillis(),
                     type = type,
                     name = name,

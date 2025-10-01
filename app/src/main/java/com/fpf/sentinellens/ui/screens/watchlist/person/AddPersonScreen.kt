@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.ui.screens.person
+package com.fpf.sentinellens.ui.screens.watchlist.person
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,7 +38,7 @@ import com.fpf.sentinellens.ui.components.SelectorItem
 import com.fpf.sentinellens.ui.components.TextInput
 
 @Composable
-fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
+fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel(), faceId: String? = null) {
     val newName by viewModel.newName.observeAsState("")
     val newFaceImage by viewModel.newFaceImage.observeAsState(null)
     val faceType by viewModel.faceType.observeAsState(FaceType.BLACKLIST)
@@ -49,6 +50,16 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
             uri?.let { viewModel.updateFaceImage(it) }
         }
     )
+
+    DisposableEffect(faceId) {
+        if (!faceId.isNullOrBlank()) {
+            viewModel.onEditing(faceId)
+        }
+
+        onDispose {
+            viewModel.stopEditing()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -108,14 +119,14 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = viewModel()) {
                 val selected = DetectionTypes.entries
                     .first { it.value == option }
                     .key
-                viewModel.updateFaceType(selected)
+                viewModel.updateDetectionType(selected)
             }
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { viewModel.addFace(newName, newFaceImage!!, faceType) },
+            onClick = { viewModel.addFace() },
             enabled = newName.isNotBlank() && newFaceImage != null,
             modifier = Modifier
                 .fillMaxWidth()

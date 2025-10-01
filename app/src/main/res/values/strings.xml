@@ -25,9 +25,10 @@
     <!--Surveillance Screen-->
     <string name="surveillance_notice_message">Start facial recognition surveillance now and get alerts when unauthorised people are detected.</string>
 
-    <!--Faces screen -->
+    <!--Watchlist screen -->
     <string name="no_entries">Empty Watchlist</string>
     <string name="no_entries_description">Upload a photo to add someone to your Watchlist. Face detection happens automatically.</string>
+    <string name="delete_face_alert_description">Press `OK` to delete the selected watchlist item.</string>
 
     <!-- Donate screen -->
     <string name="label_btc">Bitcoin</string>

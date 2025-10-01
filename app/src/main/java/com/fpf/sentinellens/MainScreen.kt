@@ -15,7 +15,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.fpf.sentinellens.ui.screens.donate.DonateScreen
 import com.fpf.sentinellens.ui.screens.log.DetectionLogScreen
-import com.fpf.sentinellens.ui.screens.person.AddPersonScreen
+import com.fpf.sentinellens.ui.screens.watchlist.person.AddPersonScreen
 import com.fpf.sentinellens.ui.screens.watchlist.WatchlistScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
@@ -23,6 +23,9 @@ import com.fpf.sentinellens.ui.screens.test.TestFaceIdScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsDetailScreen
 import com.fpf.sentinellens.ui.screens.surveillance.SurveillanceScreen
 import com.fpf.sentinellens.ui.screens.surveillance.SurveillanceViewModel
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +37,7 @@ fun MainScreen() {
     val typeVal = navBackStackEntry?.arguments?.getString("type")
     val settingsViewModel: SettingsViewModel = viewModel()
     val surveillanceViewModel: SurveillanceViewModel = viewModel()
-    val showBackButton = currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute == "addPerson"
+    val showBackButton = currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute?.startsWith("addPerson") == true
 
 
     val headerTitle = when {
@@ -42,7 +45,7 @@ fun MainScreen() {
         currentRoute == "donate" -> stringResource(R.string.title_donate)
         currentRoute == "test" -> stringResource(R.string.title_face_id)
         currentRoute == "watchlist" -> stringResource(R.string.title_watchlist)
-        currentRoute == "addPerson" -> stringResource(R.string.title_add_person)
+        currentRoute?.startsWith("addPerson") == true -> stringResource(R.string.title_add_person)
         currentRoute == "surveillance" -> stringResource(R.string.title_surveillance)
         currentRoute == "log" -> stringResource(R.string.title_log)
         currentRoute?.startsWith("settingsDetail") == true -> when (typeVal) {
@@ -98,16 +101,25 @@ fun MainScreen() {
             composable("surveillance"){
                 SurveillanceScreen(viewModel = surveillanceViewModel)
             }
-            composable("watchlist"){
+            composable("watchlist") {
                 WatchlistScreen(
-                    onNavigate = {
-                        navController.navigate("addPerson")
+                    onNavigate = { faceId: String? ->
+                        val encoded = faceId?.let { URLEncoder.encode(it, StandardCharsets.UTF_8.toString()) } ?: ""
+                        navController.navigate("addPerson/$encoded")
                     }
                 )
             }
-            composable("addPerson") {
-                AddPersonScreen()
+
+            composable("addPerson/{faceId}",
+                arguments = listOf(navArgument("faceId") { type = NavType.StringType }
+                )
+            ) { navBackStackEntry ->
+                val faceId = navBackStackEntry.arguments?.getString("faceId")?.let {
+                    URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                }
+                AddPersonScreen(faceId = faceId)
             }
+
 
             composable("log") {
                 DetectionLogScreen()
@@ -119,9 +131,7 @@ fun MainScreen() {
             composable("settings") {
                 SettingsScreen(
                     viewModel = settingsViewModel,
-                    onNavigate = { route: String ->
-                        navController.navigate(route)
-                    }
+                    onNavigate = { route: String -> navController.navigate(route) }
                 )
             }
             composable(

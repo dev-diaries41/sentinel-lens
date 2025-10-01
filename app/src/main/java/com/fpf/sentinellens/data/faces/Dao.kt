@@ -12,8 +12,14 @@ interface FacesDao {
     @Query("SELECT EXISTS(SELECT 1 FROM faces)")
     fun hasAnyFaces(): LiveData<Boolean>
 
+    @Query("SELECT * FROM faces WHERE id=:id")
+    suspend fun getFace(id: String): Face
+
     @Query("SELECT * FROM faces ORDER BY date DESC")
     suspend fun getAllFacesSync(): List<Face>
+
+    @Query("UPDATE faces SET id = :newId WHERE id = :oldId")
+    suspend fun updateFaceId(oldId: String, newId: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFace(face: Face)
