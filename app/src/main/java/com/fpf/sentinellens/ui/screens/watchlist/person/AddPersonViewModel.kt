@@ -108,7 +108,7 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
                 val file = File(getApplication<Application>().filesDir, filePath)
                 val saved = saveImageLocally(faces[0], file)
 
-                if (saved) {
+                if (!saved) {
                     _error.postValue("Error saving face image")
                     return@launch
                 }
