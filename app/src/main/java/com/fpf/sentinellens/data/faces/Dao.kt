@@ -2,15 +2,16 @@ package com.fpf.sentinellens.data.faces
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FacesDao {
 
     @Query("SELECT * FROM faces ORDER BY date DESC")
-    fun getAllFaces(): LiveData<List<Face>>
+    fun getAllFaces(): Flow<List<Face>>
 
     @Query("SELECT EXISTS(SELECT 1 FROM faces)")
-    fun hasAnyFaces(): LiveData<Boolean>
+    fun hasAnyFaces(): Flow<Boolean>
 
     @Query("SELECT * FROM faces WHERE id=:id")
     suspend fun getFace(id: String): Face

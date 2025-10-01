@@ -2,13 +2,12 @@ package com.fpf.sentinellens.data.faces
 
 import android.content.Context
 import androidx.core.net.toUri
-import androidx.lifecycle.LiveData
-import com.fpf.sentinellens.lib.Storage
+import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 class FacesRepository(private val dao: FacesDao) {
-    val allFaces: LiveData<List<Face>> = dao.getAllFaces()
-    val hasAnyFaces: LiveData<Boolean> = dao.hasAnyFaces()
+    val allFaces: Flow<List<Face>> = dao.getAllFaces()
+    val hasAnyFaces: Flow<Boolean> = dao.hasAnyFaces()
 
     suspend fun getAllFacesSync(): List<Face> {
         return dao.getAllFacesSync()
