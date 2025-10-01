@@ -62,6 +62,16 @@
     <string name="other_settings">Other</string>
     <string name="setting_source_code">Source code</string>
 
+    <!--Help screen-->
+    <string name="help_title_watchlist">Configure Watchlist</string>
+    <string name="help_title_telegram">Configure Telegram for alerts</string>
+    <string name="help_description_watchlist_1">Navigate to the Watchlist screen to upload images of individuals.</string>
+    <string name="help_description_watchlist_2">Assign a name and specify whether they belong on the blacklist or whitelist.</string>
+    <string name="help_description_watchlist_3">Use the Test screen to verify recognition by uploading an image and checking detection accuracy.</string>
+    <string name="help_description_telegram_1">In Settings, enter your bot token from @BotFather.</string>
+    <string name="help_description_telegram_2">Specify the Telegram destination for alerts: public channel or private chat ID.</string>
+    <string name="help_description_telegram_3">Alerts require the bot to be in your channel; the app works without Telegram but won\'t send real-time alerts.</string>
+
     <!--Notifications-->
     <string name="sentinellens_general_channel_id">SentinelLensChannel</string>
     <string name="sentinellens_general_channel_name">Sentinel Lens General Notifications</string>
