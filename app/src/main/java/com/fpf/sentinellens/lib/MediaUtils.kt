@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
 import java.io.OutputStream
 
 
@@ -100,7 +99,7 @@ suspend fun loadBitmapFromUri(context: Context, uri: Uri, maxSize: Int = DEFAULT
         }
         BitmapCache.put(uri, bitmap)
         bitmap
-    } catch (e: IOException) {
+    } catch (e: Exception) {
         e.printStackTrace()
         null
     }
@@ -114,7 +113,7 @@ suspend fun loadBitmapFromLocalUri(uri: Uri, maxSize: Int = DEFAULT_IMAGE_DISPLA
                 BitmapCache.put(uri, bitmap)
             }
             bitmap
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
             null
         }
