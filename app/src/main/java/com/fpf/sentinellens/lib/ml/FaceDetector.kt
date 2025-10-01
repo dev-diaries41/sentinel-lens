@@ -24,7 +24,7 @@ interface IDetectionProvider<T> {
 
 typealias FaceDetectorProvider = IDetectionProvider<Bitmap>
 
-class FaceDetectorHelper(
+class FaceDetector(
     resources: Resources,
     modelSource: ModelSource,
     private val confThreshold: Float = 0.5f,
@@ -36,7 +36,7 @@ class FaceDetectorHelper(
     }
 
     companion object {
-        private const val TAG = "FaceDetectorHelper"
+        private const val TAG = "FaceDetector"
         const val DETECTOR_IMAGE_WIDTH = 240L
         const val DETECTOR_IMAGE_HEIGHT = 320L
     }
