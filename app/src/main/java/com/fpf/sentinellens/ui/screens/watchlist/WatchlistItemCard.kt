@@ -36,7 +36,7 @@ import androidx.core.net.toUri
 import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FaceType
-import com.fpf.sentinellens.ui.components.MediaStoreImage
+import com.fpf.sentinellens.ui.components.ImageDisplay
 
 
 @Composable
@@ -57,13 +57,13 @@ fun WatchlistItemCard(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            MediaStoreImage(
+            ImageDisplay(
                 uri = data.id.toUri(),
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(64.dp)
                     .clip(CircleShape),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
             )
             Column(modifier = Modifier.weight(1f)) {
                 Row(

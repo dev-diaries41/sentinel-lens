@@ -9,6 +9,8 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.util.LruCache
+import androidx.core.net.toFile
+import com.fpf.smartscansdk.core.utils.getScaledDimensions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -55,13 +57,21 @@ fun cameraImageToBitmap(image: Image, rotationDegrees: Int = 0): Bitmap {
     }
 }
 
+fun getBitmapFromUri(context: Context, uri: Uri): Bitmap {
+    val source = ImageDecoder.createSource(context.contentResolver, uri)
+    return ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.ARGB_8888, true)
+}
+
+
+const val DEFAULT_IMAGE_DISPLAY_SIZE = 1024
+
 /**
  * A simple LRU Cache to hold Bitmaps to avoid decoding them multiple times.
  */
 object BitmapCache {
-    private val cache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(calculateMemoryCacheSize()) {
-        override fun sizeOf(key: String, value: Bitmap): Int {
-            return value.byteCount / 1024
+    private val cache: LruCache<Uri, Bitmap> = object : LruCache<Uri, Bitmap>(calculateMemoryCacheSize()) {
+        override fun sizeOf(key: Uri, value: Bitmap): Int {
+            return value.byteCount / 1024 // in KB
         }
     }
 
@@ -77,45 +87,31 @@ object BitmapCache {
         }
     }
 
-    fun get(key: String): Bitmap? = cache.get(key)
-    fun put(key: String, bitmap: Bitmap): Bitmap? = cache.put(key, bitmap)
+    fun get(uri: Uri): Bitmap? = cache.get(uri)
+    fun put(uri: Uri, bitmap: Bitmap): Bitmap? = cache.put(uri, bitmap)
 }
 
-fun getBitmapFromUri(context: Context, uri: Uri): Bitmap {
-    val source = ImageDecoder.createSource(context.contentResolver, uri)
-    return ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.ARGB_8888, true)
-}
-
-suspend fun loadBitmapFromUri(
-    context: Context, uri: Uri, targetWidth: Int? = null, targetHeight: Int? = null): Bitmap? {
-    return withContext(Dispatchers.IO) {
-        BitmapCache.get(uri.toString()) ?: try {
-            val source = ImageDecoder.createSource(context.contentResolver, uri)
-            val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-                if (targetWidth != null && targetHeight != null) {
-                    decoder.setTargetSize(targetWidth, targetHeight)
-                }
-            }
-            BitmapCache.put(uri.toString(), bitmap)
-            bitmap
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
+suspend fun loadBitmapFromUri(context: Context, uri: Uri, maxSize: Int = DEFAULT_IMAGE_DISPLAY_SIZE): Bitmap? = withContext(Dispatchers.IO) {
+    BitmapCache.get(uri) ?: try {
+        val source = ImageDecoder.createSource(context.contentResolver, uri)
+        val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+            val (w, h) = getScaledDimensions(imgWith  = info.size.width, imgHeight = info.size.height, maxSize)
+            decoder.setTargetSize(w, h)
         }
+        BitmapCache.put(uri, bitmap)
+        bitmap
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
     }
 }
 
-
-suspend fun loadBitmapFromLocalPath(
-    context: Context,
-    path: String,
-): Bitmap? {
+suspend fun loadBitmapFromLocalUri(uri: Uri, maxSize: Int = DEFAULT_IMAGE_DISPLAY_SIZE): Bitmap? {
     return withContext(Dispatchers.IO) {
-        BitmapCache.get(path) ?: try {
-            val file = File(context.filesDir, path)
-            val bitmap = loadLocalImage(file)
+        BitmapCache.get(uri) ?: try {
+            val bitmap = loadLocalImage(uri.toFile(), maxSize)
             if(bitmap != null){
-                BitmapCache.put(path, bitmap)
+                BitmapCache.put(uri, bitmap)
             }
             bitmap
         } catch (e: IOException) {
