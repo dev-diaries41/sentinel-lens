@@ -15,6 +15,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.fpf.sentinellens.ui.components.UpdatePopUp
 import com.fpf.sentinellens.ui.screens.donate.DonateScreen
+import com.fpf.sentinellens.ui.screens.help.HelpScreen
 import com.fpf.sentinellens.ui.screens.log.DetectionLogScreen
 import com.fpf.sentinellens.ui.screens.watchlist.person.AddPersonScreen
 import com.fpf.sentinellens.ui.screens.watchlist.WatchlistScreen
@@ -138,14 +139,14 @@ fun MainScreen() {
                     }
                     AddPersonScreen(faceId = faceId)
                 }
-
-
                 composable("log") {
                     DetectionLogScreen()
                 }
-
                 composable("donate") {
                     DonateScreen()
+                }
+                composable("help") {
+                    HelpScreen()
                 }
                 composable("settings") {
                     SettingsScreen(
