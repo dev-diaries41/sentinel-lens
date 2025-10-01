@@ -5,8 +5,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FaceType
@@ -22,34 +20,39 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.fpf.sentinellens.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 
 class TestFaceIdViewModel(application: Application) : AndroidViewModel(application){
     val faceComparer = FaceEmbedder(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
     val faceDetector= FaceDetector(application.resources, ResourceId(R.raw.face_detect))
 
     val repository = FacesRepository(FaceDatabase.Companion.getDatabase(application).faceDao())
-    val hasAnyFaces = repository.hasAnyFaces
+    val hasAnyFaces: StateFlow<Boolean?> = repository.hasAnyFaces.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    private val _blacklistSimilarity = MutableLiveData<Pair<Float, String>?>(null)
-    val blacklistSimilarity: LiveData<Pair<Float, String>?> get() = _blacklistSimilarity
 
-    private val _whitelistSimilarity = MutableLiveData<Pair<Float, String>?>(null)
-    val whitelistSimilarity: LiveData<Pair<Float, String>?> get() = _whitelistSimilarity
+    private val _blacklistSimilarity = MutableStateFlow<Pair<Float, String>?>(null)
+    val blacklistSimilarity: StateFlow<Pair<Float, String>?> get() = _blacklistSimilarity
 
-    private val _selectedImage = MutableLiveData<Uri?>(null)
-    val selectedImage: LiveData<Uri?> = _selectedImage
+    private val _whitelistSimilarity = MutableStateFlow<Pair<Float, String>?>(null)
+    val whitelistSimilarity: StateFlow<Pair<Float, String>?> get() = _whitelistSimilarity
 
-    private val _error = MutableLiveData<String?>(null)
-    val error: LiveData<String?> = _error
+    private val _selectedImage = MutableStateFlow<Uri?>(null)
+    val selectedImage: StateFlow<Uri?> = _selectedImage
 
-    private val _isLoading = MutableLiveData<Boolean>(true)
-    val loading: LiveData<Boolean> = _isLoading
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _isLoading = MutableStateFlow(true)
+    val loading: StateFlow<Boolean> = _isLoading
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
             faceComparer.initialize()
             faceDetector.initialize()
-            _isLoading.postValue(false)
+            _isLoading.emit(false)
         }
     }
 
@@ -69,7 +72,7 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if(!faceDetector.isInitialized() || !faceComparer.isInitialized()){
-                    _error.postValue("Models not loaded")
+                    _error.emit("Models not loaded")
                     return@launch
                 }
                 val croppedFaces = mutableListOf<Bitmap>()
@@ -83,12 +86,12 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
                 val faceEmbeddings = croppedFaces.map{faceComparer.embed(it)}
 
                 if(faceEmbeddings.isEmpty()) {
-                    _error.postValue("No faces detected")
+                    _error.emit("No faces detected")
                     return@launch
                 }
 
                 if(faceEmbeddings.size > 1) {
-                    _error.postValue("Invalid number of faces: ${faceEmbeddings.size}. Please ensure the image has only one person.")
+                    _error.emit("Invalid number of faces: ${faceEmbeddings.size}. Please ensure the image has only one person.")
                     return@launch
                 }
 
@@ -100,14 +103,14 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
                     val blacklistSimilarities = getSimilarities(faceEmbeddings[0], blacklist.map { it.embeddings })
                     val bestBlacklistIndex = getTopN(blacklistSimilarities, 1).first()
                     val result = Pair(blacklistSimilarities[bestBlacklistIndex], blacklist[bestBlacklistIndex].name)
-                    _blacklistSimilarity.postValue(result)
+                    _blacklistSimilarity.emit(result)
                 }
 
                 if(whitelist.isNotEmpty()){
                     val whitelistSimilarities = getSimilarities(faceEmbeddings[0], whitelist.map { it.embeddings })
                     val bestWhitelistIndex = getTopN(whitelistSimilarities, 1).first()
                     val result = Pair(whitelistSimilarities[bestWhitelistIndex], whitelist[bestWhitelistIndex].name)
-                    _whitelistSimilarity.postValue(result)
+                    _whitelistSimilarity.emit(result)
                 }
             } catch (e: Exception) {
                 Log.e("FaceIdViewModel", "Inference failed: ${e.message}", e)
@@ -118,7 +121,7 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
 
     override fun onCleared() {
         super.onCleared()
-        faceComparer?.closeSession()
-        faceDetector?.closeSession()
+        faceComparer.closeSession()
+        faceDetector.closeSession()
     }
 }
