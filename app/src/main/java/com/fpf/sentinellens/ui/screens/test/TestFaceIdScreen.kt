@@ -13,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,12 +26,12 @@ import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewModel: SettingsViewModel) {
-    val hasAnyFaces by viewModel.hasAnyFaces.observeAsState()
-    val selectedImage by viewModel.selectedImage.observeAsState()
-    val blacklistResult by viewModel.blacklistSimilarity.observeAsState()
-    val whitelistResult by viewModel.whitelistSimilarity.observeAsState()
-    val error by viewModel.error.observeAsState()
-    val isLoading by viewModel.loading.observeAsState()
+    val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
+    val selectedImage by viewModel.selectedImage.collectAsState()
+    val blacklistResult by viewModel.blacklistSimilarity.collectAsState()
+    val whitelistResult by viewModel.whitelistSimilarity.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val isLoading by viewModel.loading.collectAsState()
     val settings by settingsViewModel.appSettings.collectAsState()
     val scrollState = rememberScrollState()
 
@@ -66,7 +65,7 @@ fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewM
             }
 
             AnimatedVisibility (
-                visible = isLoading == true,
+                visible = isLoading,
                 enter = fadeIn(animationSpec = tween(durationMillis = 500)) + expandVertically(),
                 exit = fadeOut(animationSpec = tween(durationMillis = 500)) + shrinkVertically()
             ) {
@@ -86,7 +85,7 @@ fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewM
             if (selectedImage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    enabled = isLoading == false && hasAnyFaces == true,
+                    enabled = !isLoading && hasAnyFaces == true,
                     onClick = {
                         viewModel.inference()
                     },

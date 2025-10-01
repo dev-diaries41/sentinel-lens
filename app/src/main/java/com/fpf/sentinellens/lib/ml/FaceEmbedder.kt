@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 import java.nio.FloatBuffer
 
 
-class FaceComparisonHelper(
+class FaceEmbedder(
     resources: Resources,
     modelSource: ModelSource,
 ) : ImageEmbeddingProvider {
@@ -29,7 +29,7 @@ class FaceComparisonHelper(
     }
 
     companion object {
-        private const val TAG = "FaceComparisonHelper"
+        private const val TAG = "FaceEmbedder"
         const val DIM_BATCH_SIZE = 1
         const val DIM_PIXEL_SIZE = 3
         const val INCEPTION_IMAGE_SIZE_X = 160

@@ -14,8 +14,8 @@ import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.getBitmapFromUri
-import com.fpf.sentinellens.lib.ml.FaceComparisonHelper
-import com.fpf.sentinellens.lib.ml.FaceDetectorHelper
+import com.fpf.sentinellens.lib.ml.FaceEmbedder
+import com.fpf.sentinellens.lib.ml.FaceDetector
 import com.fpf.sentinellens.lib.ml.cropFaces
 import com.fpf.sentinellens.lib.saveImageLocally
 import com.fpf.smartscansdk.core.ml.models.ResourceId
@@ -26,8 +26,8 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class AddPersonViewModel(application: Application) : AndroidViewModel(application)  {
-    val faceComparer = FaceComparisonHelper(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
-    val faceDetector= FaceDetectorHelper(application.resources, ResourceId(R.raw.face_detect))
+    val faceComparer = FaceEmbedder(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
+    val faceDetector= FaceDetector(application.resources, ResourceId(R.raw.face_detect))
 
     private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
 
