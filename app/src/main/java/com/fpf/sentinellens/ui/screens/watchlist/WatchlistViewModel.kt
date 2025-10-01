@@ -9,12 +9,17 @@ import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.Storage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 
 class WatchlistViewModel(application: Application) : AndroidViewModel(application)  {
     private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
-    val faceList: LiveData<List<Face>> =  repository.allFaces
+    val faceList: StateFlow<List<Face>> = repository.allFaces.stateIn(viewModelScope,
+        SharingStarted.Lazily, emptyList())
+
     val storage = Storage.getInstance(application)
 
     init {
