@@ -33,8 +33,10 @@ class MainViewModel( application: Application) : AndroidViewModel(application) {
 
     fun getUpdates(): List<String>{
         return listOf(
-            getApplication<Application>().getString(R.string.update_logs),
+            getApplication<Application>().getString(R.string.update_logs_screen),
+            getApplication<Application>().getString(R.string.update_help_screen),
+            getApplication<Application>().getString(R.string.update_person_edits),
             getApplication<Application>().getString(R.string.update_video_saving),
-        )
+            )
     }
 }
