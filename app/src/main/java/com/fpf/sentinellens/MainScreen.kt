@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Science
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.fpf.sentinellens.ui.components.UpdatePopUp
 import com.fpf.sentinellens.ui.screens.donate.DonateScreen
 import com.fpf.sentinellens.ui.screens.log.DetectionLogScreen
 import com.fpf.sentinellens.ui.screens.watchlist.person.AddPersonScreen
@@ -37,7 +38,12 @@ fun MainScreen() {
     val typeVal = navBackStackEntry?.arguments?.getString("type")
     val settingsViewModel: SettingsViewModel = viewModel()
     val surveillanceViewModel: SurveillanceViewModel = viewModel()
-    val showBackButton = currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute?.startsWith("addPerson") == true
+    val mainViewModel: MainViewModel = viewModel()
+    val showBackButton =
+        currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute?.startsWith(
+            "addPerson"
+        ) == true
+    val isUpdatePopUpVisible by mainViewModel.isUpdatePopUpVisible.collectAsState()
 
 
     val headerTitle = when {
@@ -53,99 +59,113 @@ fun MainScreen() {
             "telegram" -> stringResource(R.string.setting_telegram_config)
             else -> ""
         }
+
         else -> ""
     }
 
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = headerTitle) },
-                navigationIcon = {
-                    if (showBackButton) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
+    if (isUpdatePopUpVisible) {
+        UpdatePopUp(
+            isVisible = true,
+            updates = mainViewModel.getUpdates(),
+            onClose = { mainViewModel.closeUpdatePopUp() }
+        )
+    } else {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(text = headerTitle) },
+                    navigationIcon = {
+                        if (showBackButton) {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        }
+                    },
+                    actions = {
+                        if (currentRoute != "log") {
+                            IconButton(onClick = { navController.navigate("log") }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Description,
+                                    contentDescription = "Detection Log Screen"
+                                )
+                            }
+                        }
+                        if (currentRoute != "test") {
+                            IconButton(onClick = { navController.navigate("test") }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Science,
+                                    contentDescription = "Face Id Screen"
+                                )
+                            }
                         }
                     }
-                },
-                actions = {
-                    if (currentRoute != "log") {
-                        IconButton(onClick = { navController.navigate("log") }) {
-                            Icon(
-                                imageVector = Icons.Filled.Description,
-                                contentDescription = "Detection Log Screen"
-                            )
-                        }
-                    }
-                    if (currentRoute != "test") {
-                        IconButton(onClick = { navController.navigate("test") }) {
-                            Icon(
-                                imageVector = Icons.Filled.Science,
-                                contentDescription = "Face Id Screen"
-                            )
-                        }
-                    }
+                )
+            },
+            bottomBar = { BottomNavigationBar(navController) }
+        ) { paddingValues ->
+            NavHost(
+                navController = navController,
+                startDestination = "surveillance",
+                modifier = Modifier.padding(paddingValues)
+            ) {
+                composable("surveillance") {
+                    SurveillanceScreen(viewModel = surveillanceViewModel)
                 }
-            )
-        },
-        bottomBar = { BottomNavigationBar(navController) }
-    ) { paddingValues ->
-        NavHost(
-            navController = navController,
-            startDestination = "surveillance",
-            modifier = Modifier.padding(paddingValues)
-        ) {
-            composable("surveillance"){
-                SurveillanceScreen(viewModel = surveillanceViewModel)
-            }
-            composable("watchlist") {
-                WatchlistScreen(
-                    onNavigate = { faceId: String? ->
-                        val encoded = faceId?.let { URLEncoder.encode(it, StandardCharsets.UTF_8.toString()) } ?: ""
-                        navController.navigate("addPerson/$encoded")
-                    }
-                )
-            }
-
-            composable("addPerson/{faceId}",
-                arguments = listOf(navArgument("faceId") { type = NavType.StringType }
-                )
-            ) { navBackStackEntry ->
-                val faceId = navBackStackEntry.arguments?.getString("faceId")?.let {
-                    URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                composable("watchlist") {
+                    WatchlistScreen(
+                        onNavigate = { faceId: String? ->
+                            val encoded = faceId?.let {
+                                URLEncoder.encode(
+                                    it,
+                                    StandardCharsets.UTF_8.toString()
+                                )
+                            } ?: ""
+                            navController.navigate("addPerson/$encoded")
+                        }
+                    )
                 }
-                AddPersonScreen(faceId = faceId)
-            }
+
+                composable(
+                    "addPerson/{faceId}",
+                    arguments = listOf(navArgument("faceId") { type = NavType.StringType }
+                    )
+                ) { navBackStackEntry ->
+                    val faceId = navBackStackEntry.arguments?.getString("faceId")?.let {
+                        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                    }
+                    AddPersonScreen(faceId = faceId)
+                }
 
 
-            composable("log") {
-                DetectionLogScreen()
-            }
+                composable("log") {
+                    DetectionLogScreen()
+                }
 
-            composable("donate") {
-                DonateScreen()
-            }
-            composable("settings") {
-                SettingsScreen(
-                    viewModel = settingsViewModel,
-                    onNavigate = { route: String -> navController.navigate(route) }
-                )
-            }
-            composable(
-                route = "settingsDetail/{type}",
-                arguments = listOf(navArgument ("type") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val type = backStackEntry.arguments?.getString("type") ?: ""
-                SettingsDetailScreen(
-                    type = type,
-                    viewModel = settingsViewModel,
-                )
-            }
-            composable("test"){
-                TestFaceIdScreen(settingsViewModel=settingsViewModel)
+                composable("donate") {
+                    DonateScreen()
+                }
+                composable("settings") {
+                    SettingsScreen(
+                        viewModel = settingsViewModel,
+                        onNavigate = { route: String -> navController.navigate(route) }
+                    )
+                }
+                composable(
+                    route = "settingsDetail/{type}",
+                    arguments = listOf(navArgument("type") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val type = backStackEntry.arguments?.getString("type") ?: ""
+                    SettingsDetailScreen(
+                        type = type,
+                        viewModel = settingsViewModel,
+                    )
+                }
+                composable("test") {
+                    TestFaceIdScreen(settingsViewModel = settingsViewModel)
+                }
             }
         }
     }
