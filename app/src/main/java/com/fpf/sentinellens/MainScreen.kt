@@ -50,6 +50,7 @@ fun MainScreen() {
     val headerTitle = when {
         currentRoute == "settings" -> stringResource(R.string.title_settings)
         currentRoute == "donate" -> stringResource(R.string.title_donate)
+        currentRoute == "help" -> stringResource(R.string.title_help)
         currentRoute == "test" -> stringResource(R.string.title_face_id)
         currentRoute == "watchlist" -> stringResource(R.string.title_watchlist)
         currentRoute?.startsWith("addPerson") == true -> stringResource(R.string.title_add_person)
