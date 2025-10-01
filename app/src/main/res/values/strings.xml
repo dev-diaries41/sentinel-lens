@@ -74,5 +74,9 @@
     <string name="notif_alert_error_title">Error sending alert</string>
     <string name="notif_alert_error_content">The Telegram alert failed to send. Make sure your Channel ID and Bot token are configured correctly in settings.</string>
 
-
+    <!--Updates-->
+    <string name="update_logs_screen">Added detection logs screen.</string>
+    <string name="update_help_screen">Added help screen.</string>
+    <string name="update_person_edits">Enable editing person in watchlist.</string>
+    <string name="update_video_saving">Fix bug that causes UI freezing when saving long videos.</string>
 </resources>
