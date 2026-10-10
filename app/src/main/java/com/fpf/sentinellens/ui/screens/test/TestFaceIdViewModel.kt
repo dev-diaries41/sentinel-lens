@@ -2,6 +2,7 @@ package com.fpf.sentinellens.ui.screens.test
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -10,24 +11,25 @@ import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.getBitmapFromUri
-import com.fpf.sentinellens.lib.ml.FaceEmbedder
-import com.fpf.sentinellens.lib.ml.FaceDetector
-import com.fpf.sentinellens.lib.ml.cropFaces
-import com.fpf.smartscansdk.core.ml.embeddings.getSimilarities
-import com.fpf.smartscansdk.core.ml.embeddings.getTopN
-import com.fpf.smartscansdk.core.ml.models.ResourceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.fpf.sentinellens.R
+import com.fpf.smartscansdk.core.embeddings.getSimilarities
+import com.fpf.smartscansdk.core.embeddings.getTopN
+import com.fpf.smartscansdk.core.media.cropFaces
+import com.fpf.smartscansdk.core.media.drawBoxes
+import com.fpf.smartscansdk.ml.data.ResourceId
+import com.fpf.smartscansdk.ml.models.providers.detectors.face.FaceDetector
+import com.fpf.smartscansdk.ml.models.providers.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
 class TestFaceIdViewModel(application: Application) : AndroidViewModel(application){
-    val faceComparer = FaceEmbedder(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
-    val faceDetector= FaceDetector(application.resources, ResourceId(R.raw.face_detect))
+    val faceComparer = InceptionResnetFaceEmbedder(application, ResourceId(R.raw.inception_resnet_v1_quant))
+    val faceDetector= FaceDetector(application, ResourceId(R.raw.face_detect))
 
     val repository = FacesRepository(FaceDatabase.Companion.getDatabase(application).faceDao())
     val hasAnyFaces: StateFlow<Boolean?> = repository.hasAnyFaces.stateIn(viewModelScope, SharingStarted.Lazily, null)
@@ -41,6 +43,10 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _selectedImage = MutableStateFlow<Uri?>(null)
     val selectedImage: StateFlow<Uri?> = _selectedImage
+    private val _withBoxes = MutableStateFlow<Bitmap?>(null)
+
+    val withBoxes: StateFlow<Bitmap?> = _withBoxes
+
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -90,10 +96,13 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
                     return@launch
                 }
 
-                if(faceEmbeddings.size > 1) {
-                    _error.emit("Invalid number of faces: ${faceEmbeddings.size}. Please ensure the image has only one person.")
-                    return@launch
-                }
+//                if(faceEmbeddings.size > 1) {
+//                    _error.emit("Invalid number of faces: ${faceEmbeddings.size}. Please ensure the image has only one person.")
+//                    return@launch
+//                }
+
+                val drawnBoxes = drawBoxes(bitmap, boxes, Color.GREEN)
+                _withBoxes.emit(drawnBoxes)
 
                 val allImageEmbeddings = repository.getAllFacesSync()
                 val blacklist = allImageEmbeddings.filter{it.type == FaceType.BLACKLIST }

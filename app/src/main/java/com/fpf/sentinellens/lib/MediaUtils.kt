@@ -10,7 +10,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.util.LruCache
 import androidx.core.net.toFile
-import com.fpf.smartscansdk.core.utils.getScaledDimensions
+import com.fpf.smartscansdk.core.media.getScaledDimensions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -94,7 +94,7 @@ suspend fun loadBitmapFromUri(context: Context, uri: Uri, maxSize: Int = DEFAULT
     BitmapCache.get(uri) ?: try {
         val source = ImageDecoder.createSource(context.contentResolver, uri)
         val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-            val (w, h) = getScaledDimensions(imgWith  = info.size.width, imgHeight = info.size.height, maxSize)
+            val (w, h) = getScaledDimensions(width  = info.size.width, height = info.size.height, maxSize)
             decoder.setTargetSize(w, h)
         }
         BitmapCache.put(uri, bitmap)

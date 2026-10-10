@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
-import com.fpf.smartscansdk.core.utils.getScaledDimensions
+import com.fpf.smartscansdk.core.media.getScaledDimensions
 import java.io.File
 import androidx.core.graphics.scale
 
@@ -42,7 +42,7 @@ suspend fun loadLocalImage(file: File, maxSize: Int = DEFAULT_IMAGE_DISPLAY_SIZE
             null
         } else {
             val original = BitmapFactory.decodeFile(file.absolutePath) ?: return null
-            val (w, h) = getScaledDimensions(imgWith = original.width, imgHeight = original.height, maxSize = maxSize)
+            val (w, h) = getScaledDimensions(width = original.width, height = original.height, maxSize = maxSize)
             original.scale(w, h)
         }
     } catch (e: Exception) {

@@ -60,7 +60,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.smartscan.core)
+    implementation("com.github.dev-diaries41.smartscan-sdk:smartscan-ml:1.1.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

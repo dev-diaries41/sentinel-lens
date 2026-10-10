@@ -34,6 +34,7 @@ fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewM
     val isLoading by viewModel.loading.collectAsState()
     val settings by settingsViewModel.appSettings.collectAsState()
     val scrollState = rememberScrollState()
+    val withBoxes by viewModel.withBoxes.collectAsState()
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -47,6 +48,7 @@ fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewM
         ) {
 
             ImageUploader(
+                withBoxes = withBoxes,
                 imageUri = selectedImage,
                 onImageSelected = { images ->
                     viewModel.updateImageUri(images)

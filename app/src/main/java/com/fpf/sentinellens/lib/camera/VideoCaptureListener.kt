@@ -16,13 +16,13 @@ import com.fpf.sentinellens.data.logs.DetectionLogEntity
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
 import com.fpf.sentinellens.lib.cameraImageToBitmap
 import com.fpf.sentinellens.lib.insertVideoIntoMediaStore
-import com.fpf.sentinellens.lib.ml.FaceEmbedder
-import com.fpf.sentinellens.lib.ml.FaceDetector
-import com.fpf.sentinellens.lib.ml.cropFaces
 import com.fpf.sentinellens.lib.showNotification
-import com.fpf.smartscansdk.core.ml.embeddings.getSimilarities
-import com.fpf.smartscansdk.core.ml.embeddings.getTopN
-import com.fpf.smartscansdk.core.ml.models.ResourceId
+import com.fpf.smartscansdk.core.embeddings.getSimilarities
+import com.fpf.smartscansdk.core.embeddings.getTopN
+import com.fpf.smartscansdk.core.media.cropFaces
+import com.fpf.smartscansdk.ml.data.ResourceId
+import com.fpf.smartscansdk.ml.models.providers.detectors.face.FaceDetector
+import com.fpf.smartscansdk.ml.models.providers.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,8 +46,9 @@ class VideoCaptureListener(
     private var lastDetectionTime: Long = 0L
     private var numDetections: Int = 0
 
-    val faceComparer = FaceEmbedder(application.resources, ResourceId(R.raw.inception_resnet_v1_quant))
-    val faceDetector= FaceDetector(application.resources, ResourceId(R.raw.face_detect))
+    val faceComparer = InceptionResnetFaceEmbedder(application, ResourceId(R.raw.inception_resnet_v1_quant))
+    val faceDetector= FaceDetector(application, ResourceId(R.raw.face_detect))
+
     private val detectionLogRepository: DetectionLogRepository = DetectionLogRepository(DetectionLogDatabase.getDatabase(application).detectionLogsDao())
 
     companion object {
