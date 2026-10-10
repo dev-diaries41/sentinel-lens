@@ -95,43 +95,33 @@ fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = koinViewModel(), settingsV
                 }
             }
 
-            if (blacklistResult != null) {
+            blacklistResult?.let{ result ->
                 Spacer(modifier = Modifier.height(8.dp))
-                val (similarity, name) = blacklistResult!!
-                val isMatch = similarity >= settings.similarityThreshold
                 Text(
-                    "Is blacklist match: $isMatch",
+                    "Is blacklist match: ${result.isMatch}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "Similarity: ${String.format("%.2f", similarity)}",
+                    "Similarity: ${String.format("%.2f", result.similarity)}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                if (isMatch) {
-                    Text(
-                        "Name: $name",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                if (result.isMatch) {
+                    Text("Name: ${result.name}", style = MaterialTheme.typography.bodyMedium)
                 }
             }
 
-            if (whitelistResult != null) {
+            whitelistResult?.let{ result ->
                 Spacer(modifier = Modifier.height(8.dp))
-                val (similarity, name) = whitelistResult!!
-                val isMatch = similarity >= settings.similarityThreshold
                 Text(
-                    "Is whitelist match: $isMatch",
+                    "Is whitelist match: ${result.isMatch}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "Similarity: ${String.format("%.2f", similarity)}",
+                    "Similarity: ${String.format("%.2f", result.similarity)}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                if (isMatch) {
-                    Text(
-                        "Name: $name",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                if (result.isMatch) {
+                    Text("Name: ${result.name}", style = MaterialTheme.typography.bodyMedium)
                 }
             }
 

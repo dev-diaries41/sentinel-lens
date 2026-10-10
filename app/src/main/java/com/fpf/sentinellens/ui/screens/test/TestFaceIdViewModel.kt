@@ -29,13 +29,19 @@ class TestFaceIdViewModel(
     private val faceComparer: InceptionResnetFaceEmbedder,
     private val faceDetector: FaceDetector
 ) : AndroidViewModel(application){
+
+    companion object {
+        private const val MIN_SIMILARITY: Float = 0.51f
+        private const val BOTTOM_SIM_RANGE = -1f
+    }
+
     val hasAnyFaces: StateFlow<Boolean?> = repository.hasAnyFaces.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    private val _blacklistSimilarity = MutableStateFlow<Pair<Float, String>?>(null)
-    val blacklistSimilarity: StateFlow<Pair<Float, String>?> = _blacklistSimilarity
+    private val _blacklistSimilarity = MutableStateFlow<FaceIdResult?>(null)
+    val blacklistSimilarity: StateFlow<FaceIdResult?> = _blacklistSimilarity
 
-    private val _whitelistSimilarity = MutableStateFlow<Pair<Float, String>?>(null)
-    val whitelistSimilarity: StateFlow<Pair<Float, String>?> = _whitelistSimilarity
+    private val _whitelistSimilarity = MutableStateFlow<FaceIdResult?>(null)
+    val whitelistSimilarity: StateFlow<FaceIdResult?> = _whitelistSimilarity
 
     private val _selectedImage = MutableStateFlow<Uri?>(null)
     val selectedImage: StateFlow<Uri?> = _selectedImage
@@ -85,11 +91,6 @@ class TestFaceIdViewModel(
                     return@launch
                 }
 
-//                if(faceEmbeddings.size > 1) {
-//                    _error.emit("Invalid number of faces: ${faceEmbeddings.size}. Please ensure the image has only one person.")
-//                    return@launch
-//                }
-
                 val drawnBoxes = drawBoxes(bitmap, boxes, Color.GREEN)
                 _withBoxes.emit(drawnBoxes)
 
@@ -99,20 +100,39 @@ class TestFaceIdViewModel(
 
                 if(blacklist.isNotEmpty()){
                     val blacklistSimilarities = getSimilarities(faceEmbeddings[0], blacklist.map { it.embeddings })
-                    val bestBlacklistIndex = getTopN(blacklistSimilarities, 1).first()
-                    val result = Pair(blacklistSimilarities[bestBlacklistIndex], blacklist[bestBlacklistIndex].name)
+                    val bestBlacklistIndex = getTopN(blacklistSimilarities, 1, threshold = BOTTOM_SIM_RANGE).first()
+                    val sim = blacklistSimilarities[bestBlacklistIndex]
+                    val name = blacklist[bestBlacklistIndex].name
+                    val result = FaceIdResult(
+                        isMatch = sim >= MIN_SIMILARITY,
+                        name=name,
+                        similarity = sim
+                    )
                     _blacklistSimilarity.emit(result)
                 }
 
                 if(whitelist.isNotEmpty()){
                     val whitelistSimilarities = getSimilarities(faceEmbeddings[0], whitelist.map { it.embeddings })
-                    val bestWhitelistIndex = getTopN(whitelistSimilarities, 1).first()
-                    val result = Pair(whitelistSimilarities[bestWhitelistIndex], whitelist[bestWhitelistIndex].name)
+                    val bestWhitelistIndex = getTopN(whitelistSimilarities, 1, threshold = BOTTOM_SIM_RANGE).first()
+                    val sim = whitelistSimilarities[bestWhitelistIndex]
+                    val name = whitelist[bestWhitelistIndex].name
+                    val result = FaceIdResult(
+                        isMatch = sim >= MIN_SIMILARITY,
+                        name=name,
+                        similarity = sim
+                    )
                     _whitelistSimilarity.emit(result)
                 }
             } catch (e: Exception) {
                 Log.e("FaceIdViewModel", "Inference failed: ${e.message}", e)
+                _error.emit("Error testing face id")
             }
         }
     }
 }
+
+data class FaceIdResult(
+    val isMatch: Boolean,
+    val name: String,
+    val similarity: Float
+)
