@@ -13,15 +13,21 @@ import androidx.core.app.NotificationCompat
 import com.fpf.sentinellens.MainActivity
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.FaceType
+import com.fpf.sentinellens.data.faces.FacesRepository
+import com.fpf.sentinellens.data.logs.DetectionLogRepository
 import com.fpf.sentinellens.lib.Storage
-import com.fpf.sentinellens.lib.camera.IMlVideoCaptureListener
+import com.fpf.sentinellens.lib.camera.IVideoCaptureListener
 import com.fpf.sentinellens.lib.camera.VideoCaptureHelper
 import com.fpf.sentinellens.lib.camera.VideoCaptureListener
 import com.fpf.sentinellens.lib.showNotification
 import com.fpf.sentinellens.ui.screens.settings.AppSettings
+import com.fpf.smartscansdk.ml.detectors.FaceDetector
+import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.serialization.json.Json
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class SurveillanceForegroundService : Service() {
+class SurveillanceForegroundService : Service(), KoinComponent {
     companion object {
         private const val NOTIFICATION_ID = 102
         const val MODE = "mode"
@@ -34,7 +40,13 @@ class SurveillanceForegroundService : Service() {
     }
 
     private lateinit var videoCaptureHelper: VideoCaptureHelper
-    private var videoCaptureListener: IMlVideoCaptureListener? = null
+    private var videoCaptureListener: IVideoCaptureListener? = null
+
+    private val facesRepository: FacesRepository by inject()
+    private val detectionLogRepository: DetectionLogRepository by inject()
+    private val faceComparer: InceptionResnetFaceEmbedder by inject()
+    private val faceDetector: FaceDetector by inject()
+
 
     override fun onCreate() {
         super.onCreate()
@@ -88,7 +100,6 @@ class SurveillanceForegroundService : Service() {
 
     override fun onDestroy() {
         videoCaptureHelper.stopVideoCapture()
-        videoCaptureListener?.closeSession()
         super.onDestroy()
     }
 
@@ -114,9 +125,15 @@ class SurveillanceForegroundService : Service() {
             alertFrequency = appSettings.alertFrequency,
             telegramBotToken = appSettings.telegramBotToken,
             telegramChannelId = appSettings.telegramChannelId,
-            mode = mode
+            mode = mode,
+            faceDetector = faceDetector,
+            faceComparer = faceComparer,
+            faceRepository = facesRepository,
+            detectionLogRepository = detectionLogRepository
         )
-        videoCaptureHelper = VideoCaptureHelper(this,
+
+        videoCaptureHelper = VideoCaptureHelper(
+            context= applicationContext,
             listener = videoCaptureListener,
             isFrameProcessingActive = true,
             frameInterval = appSettings.frameInterval,

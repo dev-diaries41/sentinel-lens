@@ -8,10 +8,8 @@ import com.fpf.sentinellens.R
 import com.fpf.sentinellens.api.sendTelegramMessage
 import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.Face
-import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.faces.FaceType
-import com.fpf.sentinellens.data.logs.DetectionLogDatabase
 import com.fpf.sentinellens.data.logs.DetectionLogEntity
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
 import com.fpf.sentinellens.lib.cameraImageToBitmap
@@ -20,17 +18,12 @@ import com.fpf.sentinellens.lib.showNotification
 import com.fpf.smartscansdk.core.embeddings.getSimilarities
 import com.fpf.smartscansdk.core.embeddings.getTopN
 import com.fpf.smartscansdk.core.media.cropFaces
-import com.fpf.smartscansdk.ml.data.ResourceId
-import com.fpf.smartscansdk.ml.models.providers.detectors.face.FaceDetector
-import com.fpf.smartscansdk.ml.models.providers.embeddings.inception.InceptionResnetFaceEmbedder
+import com.fpf.smartscansdk.ml.detectors.FaceDetector
+import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
-
-interface IMlVideoCaptureListener : IVideoCaptureListener {
-    fun closeSession()
-}
 
 class VideoCaptureListener(
     private val application: Application,
@@ -38,18 +31,17 @@ class VideoCaptureListener(
     private val threshold: Float = 0.52F,
     private val telegramChannelId: String = "",
     private val telegramBotToken: String = "",
-    private val mode: FaceType = FaceType.BLACKLIST
-    ): IMlVideoCaptureListener
+    private val mode: FaceType = FaceType.BLACKLIST,
+    private val faceComparer: InceptionResnetFaceEmbedder,
+    private val faceDetector: FaceDetector,
+    private val faceRepository: FacesRepository,
+    private val detectionLogRepository: DetectionLogRepository
+): IVideoCaptureListener
 {
     private var blackList: List<Face>? = null
     private var whiteList: List<Face>? = null
     private var lastDetectionTime: Long = 0L
     private var numDetections: Int = 0
-
-    val faceComparer = InceptionResnetFaceEmbedder(application, ResourceId(R.raw.inception_resnet_v1_quant))
-    val faceDetector= FaceDetector(application, ResourceId(R.raw.face_detect))
-
-    private val detectionLogRepository: DetectionLogRepository = DetectionLogRepository(DetectionLogDatabase.getDatabase(application).detectionLogsDao())
 
     companion object {
         private const val TAG = "VideoCaptureListener"
@@ -62,10 +54,13 @@ class VideoCaptureListener(
     }
 
     private suspend fun setupListener(){
-        faceDetector.initialize()
-        faceComparer.initialize()
-        val repository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
-        val storedFaces = repository.getAllFacesSync()
+        if(!faceDetector.isInitialized()){
+            faceDetector.initialize()
+        }
+        if( !faceComparer.isInitialized()){
+            faceComparer.initialize()
+        }
+        val storedFaces = faceRepository.getAllFacesSync()
         blackList = storedFaces.filter{it.type == FaceType.BLACKLIST }
         whiteList = storedFaces.filter{it.type == FaceType.WHITELIST }
     }
@@ -182,10 +177,5 @@ class VideoCaptureListener(
             val content = if (name != null) "Detected person: $name. $baseContent" else baseContent
             showNotification(application, title, content)
         }
-    }
-
-    override fun closeSession(){
-        faceComparer.closeSession()
-        faceDetector.closeSession()
     }
 }
