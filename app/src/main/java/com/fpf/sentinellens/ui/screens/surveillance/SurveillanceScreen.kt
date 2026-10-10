@@ -30,16 +30,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.ui.components.SelectorItem
 import com.fpf.sentinellens.ui.permissions.RequestPermissions
 import com.fpf.sentinellens.ui.theme.Green500
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SurveillanceScreen(
-    viewModel: SurveillanceViewModel = viewModel(),
+    viewModel: SurveillanceViewModel = koinViewModel(),
 ) {
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
     val hasPermissions by viewModel.hasPermissions.collectAsState(false)

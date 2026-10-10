@@ -24,14 +24,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.Face
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
 fun WatchlistScreen(
-    viewModel: WatchlistViewModel = viewModel(),
+    viewModel: WatchlistViewModel = koinViewModel(),
     onNavigate: (String?) -> Unit,
 ) {
     val faceList by viewModel.faceList.collectAsState(emptyList())

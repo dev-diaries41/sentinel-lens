@@ -7,39 +7,35 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.getBitmapFromUri
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.fpf.sentinellens.R
 import com.fpf.smartscansdk.core.embeddings.getSimilarities
 import com.fpf.smartscansdk.core.embeddings.getTopN
 import com.fpf.smartscansdk.core.media.cropFaces
 import com.fpf.smartscansdk.core.media.drawBoxes
-import com.fpf.smartscansdk.ml.data.ResourceId
-import com.fpf.smartscansdk.ml.models.providers.detectors.face.FaceDetector
-import com.fpf.smartscansdk.ml.models.providers.embeddings.inception.InceptionResnetFaceEmbedder
+import com.fpf.smartscansdk.ml.detectors.FaceDetector
+import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
-class TestFaceIdViewModel(application: Application) : AndroidViewModel(application){
-    val faceComparer = InceptionResnetFaceEmbedder(application, ResourceId(R.raw.inception_resnet_v1_quant))
-    val faceDetector= FaceDetector(application, ResourceId(R.raw.face_detect))
-
-    val repository = FacesRepository(FaceDatabase.Companion.getDatabase(application).faceDao())
+class TestFaceIdViewModel(
+    application: Application,
+    private val repository: FacesRepository,
+    private val faceComparer: InceptionResnetFaceEmbedder,
+    private val faceDetector: FaceDetector
+) : AndroidViewModel(application){
     val hasAnyFaces: StateFlow<Boolean?> = repository.hasAnyFaces.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-
     private val _blacklistSimilarity = MutableStateFlow<Pair<Float, String>?>(null)
-    val blacklistSimilarity: StateFlow<Pair<Float, String>?> get() = _blacklistSimilarity
+    val blacklistSimilarity: StateFlow<Pair<Float, String>?> = _blacklistSimilarity
 
     private val _whitelistSimilarity = MutableStateFlow<Pair<Float, String>?>(null)
-    val whitelistSimilarity: StateFlow<Pair<Float, String>?> get() = _whitelistSimilarity
+    val whitelistSimilarity: StateFlow<Pair<Float, String>?> = _whitelistSimilarity
 
     private val _selectedImage = MutableStateFlow<Uri?>(null)
     val selectedImage: StateFlow<Uri?> = _selectedImage
@@ -47,20 +43,11 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
 
     val withBoxes: StateFlow<Bitmap?> = _withBoxes
 
-
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    private val _isLoading = MutableStateFlow(true)
+    private val _isLoading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _isLoading
-
-    init {
-        CoroutineScope(Dispatchers.Default).launch {
-            faceComparer.initialize()
-            faceDetector.initialize()
-            _isLoading.emit(false)
-        }
-    }
 
     fun updateImageUri(uri: Uri?) {
         _error.value = null
@@ -77,9 +64,11 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
         _error.value = null
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                if(!faceDetector.isInitialized() || !faceComparer.isInitialized()){
-                    _error.emit("Models not loaded")
-                    return@launch
+                if(!faceDetector.isInitialized()){
+                    faceDetector.initialize()
+                }
+                if( !faceComparer.isInitialized()){
+                    faceComparer.initialize()
                 }
                 val croppedFaces = mutableListOf<Bitmap>()
                 val uri = _selectedImage.value ?: return@launch
@@ -125,12 +114,5 @@ class TestFaceIdViewModel(application: Application) : AndroidViewModel(applicati
                 Log.e("FaceIdViewModel", "Inference failed: ${e.message}", e)
             }
         }
-    }
-
-
-    override fun onCleared() {
-        super.onCleared()
-        faceComparer.closeSession()
-        faceDetector.closeSession()
     }
 }

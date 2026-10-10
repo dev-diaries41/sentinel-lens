@@ -23,7 +23,6 @@ import com.fpf.sentinellens.ui.components.ImageUploader
 import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
 
 @SuppressLint("DefaultLocale")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewModel: SettingsViewModel) {
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()

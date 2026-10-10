@@ -5,69 +5,58 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.Face
-import com.fpf.sentinellens.data.faces.FaceDatabase
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.lib.getBitmapFromUri
 import com.fpf.sentinellens.lib.saveImageLocally
 import com.fpf.smartscansdk.core.media.cropFaces
-import com.fpf.smartscansdk.ml.data.ResourceId
-import com.fpf.smartscansdk.ml.models.providers.detectors.face.FaceDetector
-import com.fpf.smartscansdk.ml.models.providers.embeddings.inception.InceptionResnetFaceEmbedder
-import kotlinx.coroutines.CoroutineScope
+import com.fpf.smartscansdk.ml.detectors.FaceDetector
+import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
-class AddPersonViewModel(application: Application) : AndroidViewModel(application)  {
-    val faceComparer = InceptionResnetFaceEmbedder(application, ResourceId(R.raw.inception_resnet_v1_quant))
-    val faceDetector= FaceDetector(application, ResourceId(R.raw.face_detect))
+class AddPersonViewModel(
+    application: Application,
+    private val repository: FacesRepository,
+    private val faceComparer: InceptionResnetFaceEmbedder,
+    private val faceDetector: FaceDetector
+) : AndroidViewModel(application)  {
 
-    private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
+    private val _newName = MutableStateFlow("")
+    val newName: StateFlow<String> = _newName
 
-    private val _newName =  MutableLiveData("")
-    val newName:LiveData<String> = _newName
+    private val _newFaceImage = MutableStateFlow<Uri?>(null)
+    val newFaceImage: StateFlow<Uri?> = _newFaceImage
 
-    private val _newFaceImage = MutableLiveData<Uri?>(null)
-    val newFaceImage: LiveData<Uri?> = _newFaceImage
+    private val _faceType = MutableStateFlow(FaceType.BLACKLIST)
+    val faceType: StateFlow<FaceType> = _faceType
 
-    private val _faceType = MutableLiveData(FaceType.BLACKLIST)
-    val faceType: LiveData<FaceType> = _faceType
-
-    private val _error = MutableLiveData<String?>(null)
-    val error: LiveData<String?> = _error
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
     private val _isEditing = MutableStateFlow(false)
 
-    init {
-        CoroutineScope(Dispatchers.Default).launch {
-            faceComparer.initialize()
-            faceDetector.initialize()
-        }
-    }
-
     fun updateName(name: String){
-        _newName.postValue(name)
+        _newName.value = name
     }
 
     fun updateFaceImage(uri: Uri){
-        _error.postValue(null)
-        _newFaceImage.postValue(uri)
+        _error.value = null
+        _newFaceImage.value = uri
     }
 
     fun updateDetectionType(type: FaceType){
-        _faceType.postValue(type)
+        _faceType.value = type
     }
 
     fun reset(){
-        _newName.postValue("")
-        _newFaceImage.postValue(null)
+        _newName.value = ""
+        _newFaceImage.value = null
     }
 
     fun onEditing(faceId: String){
@@ -91,27 +80,27 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
 
         viewModelScope.launch {
             try {
-                if(!faceDetector.isInitialized() || !faceComparer.isInitialized()){
-                    throw IllegalStateException("Models not loaded")
+                if(!faceDetector.isInitialized()){
+                    faceDetector.initialize()
+                }
+                if( !faceComparer.isInitialized()){
+                    faceComparer.initialize()
                 }
                 val bitmap = getBitmapFromUri(getApplication(), newFaceImage)
                 val (_, boxes) = faceDetector.detect(bitmap)
                 val faces = cropFaces(bitmap, boxes)
 
                 if(faces.isEmpty()) {
-                    _error.postValue("No faces detected")
+                    _error.value = "No faces detected"
                     return@launch
                 }
 
                 val faceEmbeddings = faceComparer.embed(faces[0])
                 val filePath = "faces/${newFaceImage.toString().hashCode()}.jpg"
                 val file = File(getApplication<Application>().filesDir, filePath)
-                val saved = saveImageLocally(faces[0], file)
 
-                if (!saved) {
-                    _error.postValue("Error saving face image")
-                    return@launch
-                }
+                // TOOD: add error handling
+                saveImageLocally(faces[0], file)
 
                 val id = if(_isEditing.value) newFaceImage.toString() else file.toUri().toString()
 
@@ -126,6 +115,7 @@ class AddPersonViewModel(application: Application) : AndroidViewModel(applicatio
                 reset()
 
             }catch (e: Exception){
+                _error.value = "Error saving face image"
                 Log.d("FacesViewModel", "Error adding face: $e")
             }
         }

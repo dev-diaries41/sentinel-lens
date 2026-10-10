@@ -16,8 +16,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
-class SurveillanceViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: FacesRepository = FacesRepository(FaceDatabase.getDatabase(application).faceDao())
+class SurveillanceViewModel(
+    application: Application,
+    private val repository: FacesRepository
+) : AndroidViewModel(application) {
     val hasAnyFaces: StateFlow<Boolean?> = repository.hasAnyFaces.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     private val _hasPermissions = MutableStateFlow(false)
