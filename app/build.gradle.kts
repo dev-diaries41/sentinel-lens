@@ -66,7 +66,15 @@ kotlin {
 }
 
 dependencies {
+    // ML Infra
     implementation(libs.smartscan.ml)
+
+    // Koin DI
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose.viewmodel)
+    implementation(platform(libs.koin.bom))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
