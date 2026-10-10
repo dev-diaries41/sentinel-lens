@@ -75,6 +75,10 @@ dependencies {
     implementation(libs.koin.compose.viewmodel)
     implementation(platform(libs.koin.bom))
 
+    // media loading
+    api(libs.coil.compose)
+    api(libs.coil.video)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
