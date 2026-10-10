@@ -25,9 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.logs.DetectionLogEntity
 import com.fpf.sentinellens.lib.toDateString
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DetectionLogScreen(viewModel: DetectionLogViewModel = viewModel()) {
+fun DetectionLogScreen(viewModel: DetectionLogViewModel = koinViewModel()) {
     val items by viewModel.log.collectAsState(emptyList())
     val isClearLogsAlertVisible by viewModel.isClearLogsAlertVisible.collectAsState()
 

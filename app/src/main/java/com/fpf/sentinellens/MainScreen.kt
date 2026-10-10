@@ -25,6 +25,7 @@ import com.fpf.sentinellens.ui.screens.test.TestFaceIdScreen
 import com.fpf.sentinellens.ui.screens.settings.SettingsDetailScreen
 import com.fpf.sentinellens.ui.screens.surveillance.SurveillanceScreen
 import com.fpf.sentinellens.ui.screens.surveillance.SurveillanceViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -38,10 +39,8 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route
     val typeVal = navBackStackEntry?.arguments?.getString("type")
     val settingsViewModel: SettingsViewModel = viewModel()
-    val surveillanceViewModel: SurveillanceViewModel = viewModel()
-    val mainViewModel: MainViewModel = viewModel()
-    val showBackButton =
-        currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute?.startsWith(
+    val mainViewModel: MainViewModel = koinViewModel()
+    val showBackButton = currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute?.startsWith(
             "addPerson"
         ) == true
     val isUpdatePopUpVisible by mainViewModel.isUpdatePopUpVisible.collectAsState()
@@ -114,7 +113,7 @@ fun MainScreen() {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable("surveillance") {
-                    SurveillanceScreen(viewModel = surveillanceViewModel)
+                    SurveillanceScreen()
                 }
                 composable("watchlist") {
                     WatchlistScreen(

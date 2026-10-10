@@ -17,14 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.ui.components.ImageUploader
 import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @SuppressLint("DefaultLocale")
 @Composable
-fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewModel: SettingsViewModel) {
+fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = koinViewModel(), settingsViewModel: SettingsViewModel) {
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
     val selectedImage by viewModel.selectedImage.collectAsState()
     val blacklistResult by viewModel.blacklistSimilarity.collectAsState()

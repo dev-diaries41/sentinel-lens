@@ -8,10 +8,8 @@ import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
 val dataModule = module {
-    single {
-        FaceDatabase.getDatabase(androidApplication())
-        DetectionLogDatabase.getDatabase(androidApplication())
-    }
+    single { FaceDatabase.getDatabase(androidApplication()) }
+    single { DetectionLogDatabase.getDatabase(androidApplication()) }
 
     single { get<FaceDatabase>().faceDao() }
     single { get<DetectionLogDatabase>().detectionLogsDao() }
