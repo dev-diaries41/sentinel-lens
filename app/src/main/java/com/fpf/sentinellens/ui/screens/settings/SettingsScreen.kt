@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -18,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.navigation.TopBarState
 import com.fpf.sentinellens.settings.alertFrequencyOptions
 import com.fpf.sentinellens.settings.cameraOptions
 import com.fpf.sentinellens.settings.frameIntervalOptions
@@ -29,6 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel(),
+    onTopBarChange: (TopBarState) -> Unit,
     onNavigate: (String) -> Unit
 ) {
     val appSettings by viewModel.appSettings.collectAsState()
@@ -40,6 +43,14 @@ fun SettingsScreen(
         packageInfo.versionName
     } catch (e: Exception) {
         null
+    }
+    val title = stringResource(R.string.title_help)
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = title,
+            )
+        )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

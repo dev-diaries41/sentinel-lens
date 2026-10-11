@@ -3,6 +3,7 @@ package com.fpf.sentinellens.ui.screens.donate
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -11,6 +12,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -21,13 +23,35 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.navigation.TopBarState
 
 @Composable
-fun DonateScreen() {
+fun DonateScreen(
+    onTopBarChange: (TopBarState) -> Unit,
+    onBack: () -> Unit,
+) {
+    val title = stringResource(R.string.title_donate)
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
     val btcWallet = stringResource(R.string.btc_wallet)
     val ethWallet = stringResource(R.string.eth_wallet)
     val ltcWallet = stringResource(R.string.ltc_wallet)
+
+
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = title,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        )
+    }
 
     Column(
         modifier = Modifier

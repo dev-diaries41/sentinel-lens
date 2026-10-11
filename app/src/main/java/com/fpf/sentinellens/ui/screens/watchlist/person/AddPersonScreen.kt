@@ -14,13 +14,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,17 +34,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.DetectionTypes
+import com.fpf.sentinellens.navigation.TopBarState
 import com.fpf.sentinellens.ui.components.ImageDisplay
 import com.fpf.sentinellens.ui.components.SelectorItem
 import com.fpf.sentinellens.ui.components.TextInput
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun AddPersonScreen(viewModel: AddPersonViewModel = koinViewModel(), faceId: String? = null) {
+fun AddPersonScreen(
+    viewModel: AddPersonViewModel = koinViewModel(),
+    faceId: String? = null,
+    onTopBarChange: (TopBarState) -> Unit,
+    onBack: () -> Unit,
+) {
     val newName by viewModel.newName.collectAsState()
     val newFaceImage by viewModel.newFaceImage.collectAsState()
     val faceType by viewModel.faceType.collectAsState()
     val error by viewModel.error.collectAsState()
+    val title = stringResource(R.string.title_add_person)
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -58,6 +68,22 @@ fun AddPersonScreen(viewModel: AddPersonViewModel = koinViewModel(), faceId: Str
         onDispose {
             viewModel.stopEditing()
         }
+    }
+
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = title,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        )
     }
 
     Column(

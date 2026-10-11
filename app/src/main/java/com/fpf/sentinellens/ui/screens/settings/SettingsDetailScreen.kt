@@ -8,27 +8,49 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.navigation.SettingsRoutes
+import com.fpf.sentinellens.navigation.TopBarState
 import com.fpf.sentinellens.ui.components.CustomSlider
 import com.fpf.sentinellens.ui.components.TextInput
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsDetailScreen(
     type: String,
     viewModel: SettingsViewModel,
+    onTopBarChange: (TopBarState) -> Unit,
+    onBack: () -> Unit,
 ) {
     val appSettings by viewModel.appSettings.collectAsState()
     val scrollState = rememberScrollState()
 
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = type,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -37,7 +59,7 @@ fun SettingsDetailScreen(
     ) {
         Column(modifier = Modifier.verticalScroll(scrollState)) {
             when (type) {
-                "threshold" -> {
+                SettingsRoutes.THRESHOLD -> {
                     CustomSlider(
                         minValue = 0f,
                         maxValue = 0.8f,
@@ -49,7 +71,7 @@ fun SettingsDetailScreen(
                     )
                 }
 
-                "telegram" -> {
+                SettingsRoutes.TELEGRAM -> {
                     TextInput(
                         label = "Channel ID",
                         value = appSettings.telegramChannelId,
@@ -67,9 +89,7 @@ fun SettingsDetailScreen(
                     )
 
                 }
-                else -> {
-                    Text("Unknown setting type")
-                }
+                else -> {}
             }
         }
     }

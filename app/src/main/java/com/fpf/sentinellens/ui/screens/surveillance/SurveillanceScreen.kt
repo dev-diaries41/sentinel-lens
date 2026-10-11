@@ -9,12 +9,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.DetectionTypes
+import com.fpf.sentinellens.navigation.TopBarState
 import com.fpf.sentinellens.ui.components.SelectorItem
 import com.fpf.sentinellens.ui.permissions.RequestPermissions
 import com.fpf.sentinellens.ui.theme.Green500
@@ -40,15 +46,41 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SurveillanceScreen(
     viewModel: SurveillanceViewModel = koinViewModel(),
+    onTopBarChange: (TopBarState) -> Unit,
+    onViewLogs: () -> Unit,
+    onTestSurveillance: () -> Unit
 ) {
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
     val hasPermissions by viewModel.hasPermissions.collectAsState(false)
     val isSurveillanceActive by viewModel.isSurveillanceActive.collectAsState()
     val detectionMode by viewModel.detectionMode.collectAsState()
     val scrollState = rememberScrollState()
+    val title = stringResource(R.string.title_surveillance)
 
     RequestPermissions { notificationGranted, cameraGranted ->
         viewModel.checkPermissions(notificationGranted, cameraGranted)
+    }
+
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = title,
+                actions = {
+                    IconButton(onClick = onViewLogs) {
+                        Icon(
+                            Icons.Filled.Description,
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(onClick = onTestSurveillance) {
+                        Icon(
+                            Icons.Filled.Science,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        )
     }
 
     Box(
