@@ -38,7 +38,7 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val typeVal = navBackStackEntry?.arguments?.getString("type")
-    val settingsViewModel: SettingsViewModel = viewModel()
+    val settingsViewModel: SettingsViewModel = koinViewModel()
     val mainViewModel: MainViewModel = koinViewModel()
     val showBackButton = currentRoute?.startsWith("settingsDetail") == true || currentRoute == "test" || currentRoute?.startsWith(
             "addPerson"

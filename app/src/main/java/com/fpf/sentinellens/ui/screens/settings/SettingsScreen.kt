@@ -16,18 +16,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.net.toUri
 import com.fpf.sentinellens.R
+import com.fpf.sentinellens.settings.alertFrequencyOptions
+import com.fpf.sentinellens.settings.cameraOptions
+import com.fpf.sentinellens.settings.frameIntervalOptions
+import com.fpf.sentinellens.settings.maxDurationOptions
 import com.fpf.sentinellens.ui.components.ActionItem
 import com.fpf.sentinellens.ui.components.SelectorItem
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel = viewModel(),
+    viewModel: SettingsViewModel = koinViewModel(),
     onNavigate: (String) -> Unit
 ) {
-    val appSettings by viewModel.appSettings.collectAsState(AppSettings())
+    val appSettings by viewModel.appSettings.collectAsState()
     val scrollState = rememberScrollState()
     val context = LocalContext.current // Access the current context
     val sourceCodeUrl = stringResource(R.string.source_code_url)

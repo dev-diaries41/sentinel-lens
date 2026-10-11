@@ -2,6 +2,7 @@ package com.fpf.sentinellens.di
 
 import com.fpf.sentinellens.MainViewModel
 import com.fpf.sentinellens.ui.screens.log.DetectionLogViewModel
+import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
 import com.fpf.sentinellens.ui.screens.surveillance.SurveillanceViewModel
 import com.fpf.sentinellens.ui.screens.test.TestFaceIdViewModel
 import com.fpf.sentinellens.ui.screens.watchlist.WatchlistViewModel
@@ -13,6 +14,7 @@ val viewModelModule = module {
     viewModel {
         MainViewModel(
             application = get(),
+            sharedPrefs = get()
         )
     }
     viewModel {
@@ -47,6 +49,12 @@ val viewModelModule = module {
             repository = get(),
             faceComparer = get(),
             faceDetector = get()
+        )
+    }
+    viewModel {
+        SettingsViewModel(
+            application = get(),
+            sharedPrefs = get()
         )
     }
 }
