@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.navigation.SettingsRoutes
 import com.fpf.sentinellens.navigation.TopBarState
-import com.fpf.sentinellens.ui.components.CustomSlider
-import com.fpf.sentinellens.ui.components.TextInput
+import com.fpf.sentinellens.ui.components.common.CustomSlider
+import com.fpf.sentinellens.ui.components.common.TextInput
 
 @Composable
 fun SettingsDetailScreen(
@@ -61,13 +61,13 @@ fun SettingsDetailScreen(
             when (type) {
                 SettingsRoutes.THRESHOLD -> {
                     CustomSlider(
+                        label = stringResource(R.string.setting_similarity_threshold),
                         minValue = 0f,
                         maxValue = 0.8f,
                         initialValue = appSettings.similarityThreshold,
                         onValueChange = { value ->
                             viewModel.updateSimilarityThreshold(value)
                         },
-                        description = stringResource(R.string.setting_similarity_threshold_description)
                     )
                 }
 
