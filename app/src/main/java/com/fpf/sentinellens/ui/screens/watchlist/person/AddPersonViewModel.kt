@@ -1,6 +1,7 @@
 package com.fpf.sentinellens.ui.screens.watchlist.person
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
@@ -10,7 +11,6 @@ import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.surveillance.FaceType
 import com.fpf.sentinellens.utils.getBitmapFromUri
-import com.fpf.sentinellens.utils.saveImageLocally
 import com.fpf.smartscansdk.core.media.cropFaces
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
@@ -74,11 +74,11 @@ class AddPersonViewModel(
     }
 
     fun addFace(){
-        val name = _newName.value ?: return
+        val name = _newName.value
         val newFaceImage = _newFaceImage.value ?: return
-        val type = _faceType.value?: return
+        val type = _faceType.value
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 if(!faceDetector.isInitialized()){
                     faceDetector.initialize()
@@ -120,4 +120,16 @@ class AddPersonViewModel(
             }
         }
     }
+
+    private fun saveImageLocally(bitmap: Bitmap, file: File) {
+        file.parentFile?.let { parentDir ->
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        }
+        file.outputStream().use { outStream ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream)
+        }
+    }
+
 }

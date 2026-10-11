@@ -7,12 +7,6 @@ import android.media.Image
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
-import android.util.LruCache
-import androidx.core.net.toFile
-import com.fpf.smartscansdk.core.media.getScaledDimensions
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -61,68 +55,7 @@ fun getBitmapFromUri(context: Context, uri: Uri): Bitmap {
     return ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.ARGB_8888, true)
 }
 
-
-const val DEFAULT_IMAGE_DISPLAY_SIZE = 1024
-
-/**
- * A simple LRU Cache to hold Bitmaps to avoid decoding them multiple times.
- */
-object BitmapCache {
-    private val cache: LruCache<Uri, Bitmap> = object : LruCache<Uri, Bitmap>(calculateMemoryCacheSize()) {
-        override fun sizeOf(key: Uri, value: Bitmap): Int {
-            return value.byteCount / 1024 // in KB
-        }
-    }
-
-    private fun calculateMemoryCacheSize(): Int {
-        val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt() // in KB
-        val calculatedCacheSize = maxMemory / 8
-        val maxAllowedCacheSize = 50 * 1024
-
-        return if (calculatedCacheSize > maxAllowedCacheSize) {
-            maxAllowedCacheSize
-        } else {
-            calculatedCacheSize
-        }
-    }
-
-    fun get(uri: Uri): Bitmap? = cache.get(uri)
-    fun put(uri: Uri, bitmap: Bitmap): Bitmap? = cache.put(uri, bitmap)
-}
-
-suspend fun loadBitmapFromUri(context: Context, uri: Uri, maxSize: Int = DEFAULT_IMAGE_DISPLAY_SIZE): Bitmap? = withContext(Dispatchers.IO) {
-    BitmapCache.get(uri) ?: try {
-        val source = ImageDecoder.createSource(context.contentResolver, uri)
-        val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-            val (w, h) = getScaledDimensions(width  = info.size.width, height = info.size.height, maxSize)
-            decoder.setTargetSize(w, h)
-        }
-        BitmapCache.put(uri, bitmap)
-        bitmap
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
-
-suspend fun loadBitmapFromLocalUri(uri: Uri, maxSize: Int = DEFAULT_IMAGE_DISPLAY_SIZE): Bitmap? {
-    return withContext(Dispatchers.IO) {
-        BitmapCache.get(uri) ?: try {
-            val bitmap = loadLocalImage(uri.toFile(), maxSize)
-            if(bitmap != null){
-                BitmapCache.put(uri, bitmap)
-            }
-            bitmap
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-}
-
-
-suspend fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri?=withContext(
-    Dispatchers.IO) {
+fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri? {
     val values = ContentValues().apply {
         put(MediaStore.Video.Media.DISPLAY_NAME, videoFile.name)
         put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
@@ -131,24 +64,13 @@ suspend fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri?=w
 
     val resolver = context.contentResolver
     val collectionUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-    val videoUri = resolver.insert(collectionUri, values)
-    if (videoUri == null) {
-        Log.e("VideoInsertionError", "Failed to create new MediaStore record.")
-        return@withContext null
-    }
+    val videoUri = resolver.insert(collectionUri, values) ?: error("Error creating new MediaStore record.")
 
-    try {
-        resolver.openOutputStream(videoUri)?.use { outputStream ->
-            copyFileToStream(videoFile, outputStream)
-            outputStream.flush()
-        }
-    } catch (e: Exception) {
-        Log.e("VideoInsertionError", "Error copying file to MediaStore", e)
-        resolver.delete(videoUri, null, null)
-        return@withContext  null
+    resolver.openOutputStream(videoUri)?.use { outputStream ->
+        copyFileToStream(videoFile, outputStream)
+        outputStream.flush()
     }
-
-    videoUri
+    return videoUri
 }
 
 
