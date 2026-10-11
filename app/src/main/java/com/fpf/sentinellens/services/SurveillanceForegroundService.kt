@@ -5,9 +5,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import android.view.Surface
 import androidx.core.app.NotificationCompat
 import com.fpf.sentinellens.MainActivity
@@ -15,15 +15,13 @@ import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
-import com.fpf.sentinellens.utils.Storage
 import com.fpf.sentinellens.camera.IVideoCaptureListener
 import com.fpf.sentinellens.camera.VideoCaptureHelper
 import com.fpf.sentinellens.camera.VideoCaptureListener
+import com.fpf.sentinellens.settings.loadSettings
 import com.fpf.sentinellens.utils.showNotification
-import com.fpf.sentinellens.ui.screens.settings.AppSettings
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
-import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -46,6 +44,8 @@ class SurveillanceForegroundService : Service(), KoinComponent {
     private val detectionLogRepository: DetectionLogRepository by inject()
     private val faceComparer: InceptionResnetFaceEmbedder by inject()
     private val faceDetector: FaceDetector by inject()
+    private val sharedPrefs: SharedPreferences by inject()
+
 
 
     override fun onCreate() {
@@ -106,25 +106,14 @@ class SurveillanceForegroundService : Service(), KoinComponent {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun setupVideoCapturer(mode: FaceType){
-        val storage = Storage.getInstance(application)
-        val jsonSettings = storage.getItem("app_settings")
-        val appSettings = if (jsonSettings != null) {
-            try {
-                Json.decodeFromString<AppSettings>(jsonSettings)
-            } catch (e: Exception) {
-                Log.e("Settings", "Failed to decode settings", e)
-                AppSettings()
-            }
-        } else {
-            AppSettings()
-        }
+        val settings = loadSettings(sharedPrefs)
 
         videoCaptureListener = VideoCaptureListener(
             application,
-            threshold = appSettings.similarityThreshold,
-            alertFrequency = appSettings.alertFrequency,
-            telegramBotToken = appSettings.telegramBotToken,
-            telegramChannelId = appSettings.telegramChannelId,
+            threshold = settings.similarityThreshold,
+            alertFrequency = settings.alertFrequency,
+            telegramBotToken = settings.telegramBotToken,
+            telegramChannelId = settings.telegramChannelId,
             mode = mode,
             faceDetector = faceDetector,
             faceComparer = faceComparer,
@@ -136,9 +125,9 @@ class SurveillanceForegroundService : Service(), KoinComponent {
             context= applicationContext,
             listener = videoCaptureListener,
             isFrameProcessingActive = true,
-            frameInterval = appSettings.frameInterval,
-            maxDuration = appSettings.maxDuration,
-            lensFacing = appSettings.cameraType
+            frameInterval = settings.frameInterval,
+            maxDuration = settings.maxDuration,
+            lensFacing = settings.cameraType
         )
     }
 }

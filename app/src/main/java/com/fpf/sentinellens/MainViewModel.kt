@@ -2,16 +2,20 @@ package com.fpf.sentinellens
 
 
 import android.app.Application
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
-import com.fpf.sentinellens.utils.Storage
+import com.fpf.sentinellens.constants.PrefsKeys
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class MainViewModel( application: Application) : AndroidViewModel(application) {
+class MainViewModel(
+    application: Application,
+    private val sharedPrefs: SharedPreferences,
+    ) : AndroidViewModel(application) {
     companion object {
-        private const val UPDATES_KEY = "UPDATES_KEY"
+        private const val TAG = "MainViewModel"
     }
-    val storage = Storage.getInstance(getApplication())
 
     val versionName: String? = try {
         val packageInfo = application.packageManager.getPackageInfo(application.packageName, 0)
@@ -20,15 +24,15 @@ class MainViewModel( application: Application) : AndroidViewModel(application) {
         null
     }
 
-    private val _isUpdatePopUpVisible = MutableStateFlow(!hasShownUpdatePopUp)
-    val  isUpdatePopUpVisible: StateFlow<Boolean> = _isUpdatePopUpVisible
+    private val storedVersion: String?
+        get() = sharedPrefs.getString(PrefsKeys.UPDATES, null)
 
-    val hasShownUpdatePopUp: Boolean
-        get() = storage.getItem(UPDATES_KEY) == versionName
+    private val _isUpdatePopUpVisible = MutableStateFlow(storedVersion != versionName && storedVersion != null)
+    val  isUpdatePopUpVisible: StateFlow<Boolean> = _isUpdatePopUpVisible
 
     fun closeUpdatePopUp(){
         _isUpdatePopUpVisible.value = false
-        storage.setItem(UPDATES_KEY, versionName.toString())
+        sharedPrefs.edit { putString(PrefsKeys.UPDATES, versionName.toString()) }
     }
 
     fun getUpdates(): List<String>{
