@@ -1,11 +1,11 @@
 package com.fpf.sentinellens.ui.screens.watchlist
 
 import android.app.Application
+import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
-import com.fpf.sentinellens.utils.Storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,21 +15,11 @@ import java.io.File
 
 class WatchlistViewModel(
     application: Application,
-    private val repository: FacesRepository
+    private val repository: FacesRepository,
     ) : AndroidViewModel(application)  {
     val faceList: StateFlow<List<Face>> = repository.allFaces.stateIn(viewModelScope,
         SharingStarted.Lazily, emptyList())
 
-    val storage = Storage.getInstance(application)
-
-    init {
-        val hasUpdatedIds = storage.getItem("hasUpdatedIds") != null
-        if(!hasUpdatedIds){
-            viewModelScope.launch(Dispatchers.IO){
-                repository.migratePickerUrisToLocal(application) { storage.setItem("hasUpdatedIds", true.toString()) }
-            }
-        }
-    }
 
     fun deleteFace(id: String){
         viewModelScope.launch {
