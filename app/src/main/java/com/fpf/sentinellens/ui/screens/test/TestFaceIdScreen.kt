@@ -1,13 +1,6 @@
 package com.fpf.sentinellens.ui.screens.test
 
-import androidx.compose.ui.graphics.Color
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +16,7 @@ import com.fpf.sentinellens.R
 import com.fpf.sentinellens.navigation.TopBarState
 import com.fpf.sentinellens.settings.AppSettings
 import com.fpf.sentinellens.ui.components.ImageUploader
-import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
+import com.fpf.sentinellens.ui.components.common.LoadingIndicator
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -92,24 +85,6 @@ fun TestFaceIdScreen(
                     )
             }
 
-            AnimatedVisibility (
-                visible = isLoading,
-                enter = fadeIn(animationSpec = tween(durationMillis = 500)) + expandVertically(),
-                exit = fadeOut(animationSpec = tween(durationMillis = 500)) + shrinkVertically()
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
-                        color = Color.White,
-                        strokeWidth = 4.dp
-                    )
-                }
-            }
-
-            // Add check in enabled
             if (selectedImage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -119,6 +94,13 @@ fun TestFaceIdScreen(
                     },
                 ) {
                     Text("Identify face")
+
+                    LoadingIndicator(
+                        isVisible = isLoading,
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
                 }
             }
 

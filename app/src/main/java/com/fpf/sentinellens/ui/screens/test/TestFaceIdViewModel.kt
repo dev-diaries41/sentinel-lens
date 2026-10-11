@@ -68,6 +68,8 @@ class TestFaceIdViewModel(
 
     fun inference() {
         _error.value = null
+        _isLoading.value = true
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if(!faceDetector.isInitialized()){
@@ -126,6 +128,8 @@ class TestFaceIdViewModel(
             } catch (e: Exception) {
                 Log.e("FaceIdViewModel", "Inference failed: ${e.message}", e)
                 _error.emit("Error testing face id")
+            }finally {
+                _isLoading.value = false
             }
         }
     }
