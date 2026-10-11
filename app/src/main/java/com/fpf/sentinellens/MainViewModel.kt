@@ -3,7 +3,7 @@ package com.fpf.sentinellens
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.fpf.sentinellens.lib.Storage
+import com.fpf.sentinellens.utils.Storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

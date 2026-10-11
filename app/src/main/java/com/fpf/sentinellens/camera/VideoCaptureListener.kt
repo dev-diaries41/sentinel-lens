@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.lib.camera
+package com.fpf.sentinellens.camera
 
 import android.app.Application
 import android.graphics.Bitmap
@@ -12,9 +12,9 @@ import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.logs.DetectionLogEntity
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
-import com.fpf.sentinellens.lib.cameraImageToBitmap
-import com.fpf.sentinellens.lib.insertVideoIntoMediaStore
-import com.fpf.sentinellens.lib.showNotification
+import com.fpf.sentinellens.utils.cameraImageToBitmap
+import com.fpf.sentinellens.utils.insertVideoIntoMediaStore
+import com.fpf.sentinellens.utils.showNotification
 import com.fpf.smartscansdk.core.embeddings.getSimilarities
 import com.fpf.smartscansdk.core.embeddings.getTopN
 import com.fpf.smartscansdk.core.media.cropFaces

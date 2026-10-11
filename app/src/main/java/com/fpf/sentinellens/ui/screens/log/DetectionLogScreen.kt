@@ -9,7 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
@@ -24,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.logs.DetectionLogEntity
-import com.fpf.sentinellens.lib.toDateString
+import com.fpf.sentinellens.utils.toDateString
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

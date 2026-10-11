@@ -1,8 +1,9 @@
-package com.fpf.sentinellens.lib.camera
+package com.fpf.sentinellens.camera
 
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.media.Image
 import android.media.ImageReader
@@ -13,6 +14,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import android.view.Surface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,7 +32,7 @@ class VideoCaptureHelper(
     private val frameInterval: Long = 1000L,
     private val maxDuration: Long? = null,
     private val lensFacing: Int = CameraCharacteristics.LENS_FACING_BACK,
-    private var previewSurface: android.view.Surface? = null
+    private var previewSurface: Surface? = null
 ) {
 
     companion object {
@@ -63,7 +65,7 @@ class VideoCaptureHelper(
         openCamera(lensFacing)
     }
 
-    fun setPreviewSurface(surface: android.view.Surface) {
+    fun setPreviewSurface(surface: Surface) {
         previewSurface = surface
     }
 
@@ -74,7 +76,7 @@ class VideoCaptureHelper(
         // So we set maxImages = 3 to avoid buffer acquisition errors.
 
         val maxImages = 3
-        imageReader = ImageReader.newInstance(VIDEO_WIDTH, VIDEO_HEIGHT, android.graphics.ImageFormat.YUV_420_888, maxImages)
+        imageReader = ImageReader.newInstance(VIDEO_WIDTH, VIDEO_HEIGHT, ImageFormat.YUV_420_888, maxImages)
 
         var lastFrameTime = 0L
 
@@ -187,7 +189,7 @@ class VideoCaptureHelper(
 
     private fun createCaptureSession() {
         try {
-            val surfaces = mutableListOf<android.view.Surface>()
+            val surfaces = mutableListOf<Surface>()
 
             surfaces.add(mediaRecorder.surface)
 

@@ -9,7 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
-import com.fpf.sentinellens.lib.getBitmapFromUri
+import com.fpf.sentinellens.utils.getBitmapFromUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.fpf.smartscansdk.core.embeddings.getSimilarities

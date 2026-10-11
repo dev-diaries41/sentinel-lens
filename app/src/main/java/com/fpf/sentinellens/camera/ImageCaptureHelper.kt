@@ -1,5 +1,6 @@
-package com.fpf.sentinellens.lib.camera
+package com.fpf.sentinellens.camera
 
+import android.Manifest
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
@@ -78,7 +79,7 @@ class ImageCaptureHelper(
             }, Handler(Looper.getMainLooper()))
 
             // Check for CAMERA permission before opening the camera
-            if (context.checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            if (context.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 cameraManager.openCamera(frontCameraId, object : CameraDevice.StateCallback() {
                     override fun onOpened(camera: CameraDevice) {
                         cameraDevice = camera

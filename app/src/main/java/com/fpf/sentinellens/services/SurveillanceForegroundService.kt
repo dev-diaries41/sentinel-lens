@@ -15,11 +15,11 @@ import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
-import com.fpf.sentinellens.lib.Storage
-import com.fpf.sentinellens.lib.camera.IVideoCaptureListener
-import com.fpf.sentinellens.lib.camera.VideoCaptureHelper
-import com.fpf.sentinellens.lib.camera.VideoCaptureListener
-import com.fpf.sentinellens.lib.showNotification
+import com.fpf.sentinellens.utils.Storage
+import com.fpf.sentinellens.camera.IVideoCaptureListener
+import com.fpf.sentinellens.camera.VideoCaptureHelper
+import com.fpf.sentinellens.camera.VideoCaptureListener
+import com.fpf.sentinellens.utils.showNotification
 import com.fpf.sentinellens.ui.screens.settings.AppSettings
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder

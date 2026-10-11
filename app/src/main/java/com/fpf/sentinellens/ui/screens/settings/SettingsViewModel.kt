@@ -5,12 +5,11 @@ import android.hardware.camera2.CameraCharacteristics
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.fpf.sentinellens.data.faces.*
-import com.fpf.sentinellens.lib.Storage
+import com.fpf.sentinellens.utils.Storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
 
 val frameIntervalOptions = mapOf(
     1000L to "1 second",

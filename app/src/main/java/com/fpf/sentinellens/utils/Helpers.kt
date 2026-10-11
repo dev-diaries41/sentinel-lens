@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.lib
+package com.fpf.sentinellens.utils
 
 import android.Manifest
 import android.content.Context

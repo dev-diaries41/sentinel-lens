@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
-import com.fpf.sentinellens.lib.Storage
+import com.fpf.sentinellens.utils.Storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

@@ -10,8 +10,8 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.fpf.sentinellens.MainActivity
-import com.fpf.sentinellens.lib.camera.ImageCaptureHelper
-import com.fpf.sentinellens.lib.camera.ImageCaptureListener
+import com.fpf.sentinellens.camera.ImageCaptureHelper
+import com.fpf.sentinellens.camera.ImageCaptureListener
 
 class CameraForegroundService : Service(), ImageCaptureListener {
 

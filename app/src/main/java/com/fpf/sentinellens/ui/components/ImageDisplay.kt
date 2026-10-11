@@ -1,6 +1,5 @@
 package com.fpf.sentinellens.ui.components
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -13,9 +12,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import com.fpf.sentinellens.lib.DEFAULT_IMAGE_DISPLAY_SIZE
-import com.fpf.sentinellens.lib.loadBitmapFromLocalUri
-import com.fpf.sentinellens.lib.loadBitmapFromUri
+import com.fpf.sentinellens.utils.DEFAULT_IMAGE_DISPLAY_SIZE
+import com.fpf.sentinellens.utils.loadBitmapFromLocalUri
+import com.fpf.sentinellens.utils.loadBitmapFromUri
 
 @Composable
 fun ImageDisplay(

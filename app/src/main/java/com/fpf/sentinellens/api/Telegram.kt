@@ -1,9 +1,6 @@
 package com.fpf.sentinellens.api
 
 import android.graphics.Bitmap
-import com.fpf.sentinellens.lib.HttpMethod
-import com.fpf.sentinellens.lib.RequestHandler
-import com.fpf.sentinellens.lib.ResponseData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*

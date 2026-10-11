@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
-import com.fpf.sentinellens.lib.getBitmapFromUri
-import com.fpf.sentinellens.lib.saveImageLocally
+import com.fpf.sentinellens.utils.getBitmapFromUri
+import com.fpf.sentinellens.utils.saveImageLocally
 import com.fpf.smartscansdk.core.media.cropFaces
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
