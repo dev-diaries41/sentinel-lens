@@ -79,6 +79,9 @@ dependencies {
     api(libs.coil.compose)
     api(libs.coil.video)
 
+    // Used for PagingSource
+    api(libs.androidx.paging.compose)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
