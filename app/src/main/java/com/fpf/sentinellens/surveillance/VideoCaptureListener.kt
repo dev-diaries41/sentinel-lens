@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.camera
+package com.fpf.sentinellens.surveillance
 
 import android.app.Application
 import android.graphics.Bitmap
@@ -6,10 +6,8 @@ import android.media.Image
 import android.util.Log
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.api.sendTelegramMessage
-import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
-import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.logs.DetectionLogEntity
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
 import com.fpf.sentinellens.utils.cameraImageToBitmap

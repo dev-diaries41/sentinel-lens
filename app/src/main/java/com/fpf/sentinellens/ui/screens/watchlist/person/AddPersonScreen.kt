@@ -7,37 +7,46 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.navigation.TopBarState
+import com.fpf.sentinellens.surveillance.DetectionTypes
 import com.fpf.sentinellens.ui.components.ImageDisplay
-import com.fpf.sentinellens.ui.components.SelectorItem
-import com.fpf.sentinellens.ui.components.TextInput
+import com.fpf.sentinellens.ui.components.common.TextInput
+import com.fpf.sentinellens.ui.components.pickers.OptionPicker
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -59,6 +68,8 @@ fun AddPersonScreen(
             uri?.let { viewModel.updateFaceImage(it) }
         }
     )
+
+    var isSelectingType by remember { mutableStateOf(false) }
 
     DisposableEffect(faceId) {
         if (!faceId.isNullOrBlank()) {
@@ -135,18 +146,33 @@ fun AddPersonScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        SelectorItem(
-            label = stringResource(id = R.string.setting_surveillance_mode),
-            showLabel = false,
-            selectedOption = DetectionTypes[faceType]!!,
-            options = DetectionTypes.values.toList(),
-            onOptionSelected = { option ->
-                val selected = DetectionTypes.entries
-                    .first { it.value == option }
-                    .key
-                viewModel.updateDetectionType(selected)
+        OutlinedButton (
+            onClick = { isSelectingType = true },
+            modifier = Modifier.widthIn(max = 140.dp).align(Alignment.Start),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            )
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = DetectionTypes[faceType]!!,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onSurface
+
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Dropdown",
+                    tint =MaterialTheme.colorScheme.onSurface
+                )
             }
-        )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -160,4 +186,16 @@ fun AddPersonScreen(
             Text("Add person")
         }
     }
+
+    OptionPicker(
+        isVisible = isSelectingType,
+        title = stringResource(id = R.string.setting_surveillance_mode),
+        selectedOption = faceType,
+        options = DetectionTypes.entries.map{ it.value to it.key},
+        onClose = { isSelectingType = false },
+        onSelect = {
+            viewModel.updateDetectionType(it)
+            isSelectingType = false
+        }
+    )
 }

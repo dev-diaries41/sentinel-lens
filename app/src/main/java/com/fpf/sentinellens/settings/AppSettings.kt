@@ -1,7 +1,7 @@
 package com.fpf.sentinellens.settings
 
 import android.hardware.camera2.CameraCharacteristics
-import com.fpf.sentinellens.data.faces.FaceType
+import com.fpf.sentinellens.surveillance.FaceType
 import kotlinx.serialization.Serializable
 
 @Serializable

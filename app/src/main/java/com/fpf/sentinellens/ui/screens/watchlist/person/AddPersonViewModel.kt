@@ -7,8 +7,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.Face
-import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
+import com.fpf.sentinellens.surveillance.FaceType
 import com.fpf.sentinellens.utils.getBitmapFromUri
 import com.fpf.sentinellens.utils.saveImageLocally
 import com.fpf.smartscansdk.core.media.cropFaces

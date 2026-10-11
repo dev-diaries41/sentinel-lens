@@ -1,14 +1,7 @@
 package com.fpf.sentinellens.data.faces
 
 import androidx.room.*
-
-enum class FaceType {BLACKLIST, WHITELIST}
-
-val DetectionTypes = mapOf(
-    FaceType.BLACKLIST to "Blacklist",
-    FaceType.WHITELIST to "Whitelist"
-)
-
+import com.fpf.sentinellens.surveillance.FaceType
 
 @Entity(tableName = "faces")
 data class Face(

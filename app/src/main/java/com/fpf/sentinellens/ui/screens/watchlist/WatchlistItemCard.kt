@@ -33,9 +33,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.data.faces.Face
-import com.fpf.sentinellens.data.faces.FaceType
+import com.fpf.sentinellens.surveillance.DetectionTypes
+import com.fpf.sentinellens.surveillance.FaceType
 import com.fpf.sentinellens.ui.components.ImageDisplay
 
 

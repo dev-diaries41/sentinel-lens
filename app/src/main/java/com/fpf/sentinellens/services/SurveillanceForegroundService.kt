@@ -12,13 +12,13 @@ import android.view.Surface
 import androidx.core.app.NotificationCompat
 import com.fpf.sentinellens.MainActivity
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
-import com.fpf.sentinellens.camera.IVideoCaptureListener
-import com.fpf.sentinellens.camera.VideoCaptureHelper
-import com.fpf.sentinellens.camera.VideoCaptureListener
+import com.fpf.sentinellens.surveillance.IVideoCaptureListener
+import com.fpf.sentinellens.surveillance.VideoCaptureHelper
+import com.fpf.sentinellens.surveillance.VideoCaptureListener
 import com.fpf.sentinellens.settings.loadSettings
+import com.fpf.sentinellens.surveillance.FaceType
 import com.fpf.sentinellens.utils.showNotification
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder

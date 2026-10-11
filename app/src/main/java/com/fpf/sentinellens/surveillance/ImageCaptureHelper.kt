@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.camera
+package com.fpf.sentinellens.surveillance
 
 import android.Manifest
 import android.content.ContentValues
@@ -31,9 +31,7 @@ class ImageCaptureHelper(
     private var captureSession: CameraCaptureSession? = null
     private var imageReader: ImageReader? = null
 
-    /**
-     * Starts the image capture process by opening the front camera and configuring the image reader.
-     */
+
     fun startImageCapture() {
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
@@ -106,9 +104,6 @@ class ImageCaptureHelper(
         }
     }
 
-    /**
-     * Creates a camera capture session for taking a still image.
-     */
     private fun createCaptureSession() {
         try {
             val surface = imageReader?.surface ?: throw Exception("ImageReader surface is null")
@@ -149,9 +144,6 @@ class ImageCaptureHelper(
         }
     }
 
-    /**
-     * Saves the captured JPEG byte array to MediaStore.
-     */
     private fun saveImage(bytes: ByteArray) {
         try {
             val filename = "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.jpg"
@@ -177,17 +169,10 @@ class ImageCaptureHelper(
             listener?.onError(e)
         }
     }
-
-    /**
-     * Checks the validity of the JPEG header.
-     */
     private fun isValidJpeg(bytes: ByteArray): Boolean {
         return bytes.isNotEmpty() && bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte()
     }
 
-    /**
-     * Closes the camera device, capture session, and image reader.
-     */
     private fun closeCamera() {
         try {
             captureSession?.close()

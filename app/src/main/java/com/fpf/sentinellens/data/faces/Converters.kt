@@ -1,6 +1,7 @@
 package com.fpf.sentinellens.data.faces
 
 import androidx.room.*
+import com.fpf.sentinellens.surveillance.FaceType
 
 class Converters {
     @TypeConverter

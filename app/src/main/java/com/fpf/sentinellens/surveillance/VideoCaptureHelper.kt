@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.camera
+package com.fpf.sentinellens.surveillance
 
 import android.Manifest
 import android.content.Context
@@ -73,7 +73,7 @@ class VideoCaptureHelper(
         // onFrame() takes ~100ms to process.
         // At 30 FPS, a new frame arrives every ~33ms.
         // 100 / 33 ≈ 3, meaning up to 3 frames could be in the pipeline at once.
-        // So we set maxImages = 3 to avoid buffer acquisition errors.
+        // maxImages = 3 to avoid buffer acquisition errors.
 
         val maxImages = 3
         imageReader = ImageReader.newInstance(VIDEO_WIDTH, VIDEO_HEIGHT, ImageFormat.YUV_420_888, maxImages)

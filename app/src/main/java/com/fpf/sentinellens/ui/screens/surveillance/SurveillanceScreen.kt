@@ -9,19 +9,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Science
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,12 +38,14 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.faces.DetectionTypes
 import com.fpf.sentinellens.navigation.TopBarState
-import com.fpf.sentinellens.ui.components.SelectorItem
+import com.fpf.sentinellens.surveillance.DetectionTypes
+import com.fpf.sentinellens.ui.components.pickers.OptionPicker
 import com.fpf.sentinellens.ui.permissions.RequestPermissions
 import com.fpf.sentinellens.ui.theme.Green500
 import org.koin.compose.viewmodel.koinViewModel
@@ -56,6 +63,8 @@ fun SurveillanceScreen(
     val detectionMode by viewModel.detectionMode.collectAsState()
     val scrollState = rememberScrollState()
     val title = stringResource(R.string.title_surveillance)
+
+    var isSelectingMode by remember { mutableStateOf(false) }
 
     RequestPermissions { notificationGranted, cameraGranted ->
         viewModel.checkPermissions(notificationGranted, cameraGranted)
@@ -96,19 +105,33 @@ fun SurveillanceScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ){
-                SelectorItem(
-                    label = stringResource(id = R.string.setting_surveillance_mode),
-                    showLabel = false,
-                    selectedOption = DetectionTypes[detectionMode]!!,
-                    options = DetectionTypes.values.toList(),
-                    onOptionSelected = { option ->
-                        val selected = DetectionTypes.entries
-                            .find { it.value == option }
-                            ?.key ?: DetectionTypes.keys.first()
-                        viewModel.updateDetectionMode(selected)
-                    },
-                    modifier = Modifier.fillMaxWidth(0.7f)
-                )
+                OutlinedButton (
+                    onClick = { isSelectingMode = true },
+                    modifier = Modifier.widthIn(max = 140.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = DetectionTypes[detectionMode]!!,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onSurface
+
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            tint =MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
                 if (isSurveillanceActive) {
                     Row(
                         modifier = Modifier
@@ -186,6 +209,18 @@ fun SurveillanceScreen(
                 .padding(bottom = 32.dp)
         )
     }
+
+    OptionPicker(
+        isVisible = isSelectingMode,
+        title = stringResource(id = R.string.setting_surveillance_mode),
+        selectedOption = detectionMode,
+        options = DetectionTypes.entries.map{ it.value to it.key},
+        onClose = { isSelectingMode = false },
+        onSelect = {
+            viewModel.updateDetectionMode(it)
+            isSelectingMode = false
+        }
+    )
 }
 
 

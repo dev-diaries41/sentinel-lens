@@ -3,7 +3,6 @@ package com.fpf.sentinellens.ui.screens.settings
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
-import com.fpf.sentinellens.data.faces.*
 import com.fpf.sentinellens.settings.AppSettings
 import com.fpf.sentinellens.settings.loadSettings
 import com.fpf.sentinellens.settings.saveSettings
@@ -25,12 +24,6 @@ class SettingsViewModel(
     fun updateSimilarityThreshold(threshold: Float) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(similarityThreshold = threshold)
-        saveSettings(sharedPrefs, _appSettings.value)
-    }
-
-    fun updateMode(mode: FaceType) {
-        val currentSettings = _appSettings.value
-        _appSettings.value = currentSettings.copy(mode = mode)
         saveSettings(sharedPrefs, _appSettings.value)
     }
 

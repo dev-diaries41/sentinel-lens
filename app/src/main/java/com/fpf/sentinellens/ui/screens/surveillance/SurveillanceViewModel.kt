@@ -6,11 +6,9 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.fpf.sentinellens.data.faces.DetectionTypes
-import com.fpf.sentinellens.data.faces.FaceDatabase
-import com.fpf.sentinellens.data.faces.FaceType
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.services.SurveillanceForegroundService
+import com.fpf.sentinellens.surveillance.FaceType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
