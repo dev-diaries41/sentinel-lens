@@ -1,39 +1,26 @@
 package com.fpf.sentinellens.ui.theme
 
-import android.hardware.lights.Light
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Light mode color scheme
-private val LightColorPalette = lightColorScheme(
+val LightColorPalette = lightColorScheme(
     primary = Teal700,
     onPrimary = Color.White,
-    secondary = Silver200,
-    onSecondary = Color.White,
-    background = LightBackgroundColor,
-    surface = LightBackgroundColor,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    surfaceContainer = LightGray
+    primaryContainer = Teal700.copy(alpha = 0.5f),
+    onPrimaryContainer = Color.Black
 )
 
-// Dark mode color scheme
-private val DarkColorPalette = darkColorScheme(
+val DarkColorPalette = darkColorScheme(
     primary = Teal500,
-    onPrimary = Color.White,
-    secondary = Silver200,
-    onSecondary = Color.White,
-    background = DarkBackgroundColor,
-    surface = DarkBackgroundColor,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    surfaceContainer = DarkGray
+    onPrimary = Color.Black,
+    primaryContainer = Teal500.copy(alpha = 0.5f),
+    onPrimaryContainer = Color.White
 )
 
 @Composable
-fun MyAppTheme(
+fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
