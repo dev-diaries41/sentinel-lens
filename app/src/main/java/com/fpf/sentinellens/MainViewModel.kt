@@ -49,10 +49,7 @@ class MainViewModel(
 
     fun getUpdates(): List<String>{
         return listOf(
-            getApplication<Application>().getString(R.string.update_logs_screen),
-            getApplication<Application>().getString(R.string.update_help_screen),
-            getApplication<Application>().getString(R.string.update_person_edits),
-            getApplication<Application>().getString(R.string.update_video_saving),
+            getApplication<Application>().getString(R.string.update_ui_improvements),
             )
     }
 
@@ -64,5 +61,10 @@ class MainViewModel(
             DataSyncHelper.transformFacePaths(getApplication(), facesRepository)
         }
         sharedPrefs.edit { putBoolean(PrefsKeys.DATA_SYNC, true) }
+
+        if(storedVersion == null) setVersion()
     }
+
+   private fun setVersion() = sharedPrefs.edit { putString(PrefsKeys.UPDATES, versionName.toString()) }
+
 }
