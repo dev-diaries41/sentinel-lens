@@ -1,5 +1,6 @@
 package com.fpf.sentinellens.ui.components
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -57,3 +58,33 @@ fun ImageDisplay(
         )
     }
 }
+
+@Composable
+fun ImageDisplay(
+    bitmap: Bitmap,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
+    onSizeChanged: ((Int, Int) -> Unit)? = null,
+    onError: ((error:  AsyncImagePainter.State.Error)-> Unit)? = null
+) {
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center) {
+
+        AsyncImage(
+            model = bitmap,
+            contentDescription = "Displayed image",
+            contentScale = contentScale,
+            modifier = Modifier.matchParentSize(),
+            onError = { onError?.invoke(it) },
+            onSuccess = {
+                onSizeChanged?.invoke(
+                    it.result.image.width,
+                    it.result.image.height
+                )
+            }
+        )
+    }
+}
+
