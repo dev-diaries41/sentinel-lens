@@ -49,6 +49,7 @@ class MainViewModel(
 
     fun getUpdates(): List<String>{
         return listOf(
+            getApplication<Application>().getString(R.string.update_record_audio),
             getApplication<Application>().getString(R.string.update_ui_improvements),
             )
     }

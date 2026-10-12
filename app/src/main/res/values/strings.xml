@@ -86,6 +86,7 @@
     <string name="notif_alert_error_content">The Telegram alert failed to send. Make sure your Channel ID and Bot token are configured correctly in settings.</string>
 
     <!--Updates-->
+    <string name="update_record_audio">Added support for recording audio.</string>
     <string name="update_ui_improvements">Minor UI improvements.</string>
 
 </resources>
