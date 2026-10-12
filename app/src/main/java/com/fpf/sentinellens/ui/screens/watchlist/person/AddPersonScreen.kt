@@ -111,9 +111,9 @@ fun AddPersonScreen(
         Box(
             modifier = Modifier
                 .size(200.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.medium)
                 .border(width = 1.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), shape = MaterialTheme.shapes.medium)
-                .clip(shape = MaterialTheme.shapes.medium)
+                .clip(MaterialTheme.shapes.medium)
                 .clickable { imagePickerLauncher.launch("image/*") }
         ) {
             if (state.faceImage != null) {
