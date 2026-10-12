@@ -1,6 +1,7 @@
 package com.fpf.sentinellens.ui.screens.watchlist.person
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -36,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,16 +57,14 @@ fun AddPersonScreen(
     onTopBarChange: (TopBarState) -> Unit,
     onBack: () -> Unit,
 ) {
-    val newName by viewModel.newName.collectAsState()
-    val newFaceImage by viewModel.newFaceImage.collectAsState()
-    val faceType by viewModel.faceType.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val context = LocalContext.current
+    val state by viewModel.state.collectAsState()
     val title = stringResource(R.string.title_add_person)
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
-            uri?.let { viewModel.updateFaceImage(it) }
+            uri?.let { viewModel.onAction(AddPersonAction.UpdateFaceImage(it)) }
         }
     )
 
@@ -92,6 +92,12 @@ fun AddPersonScreen(
         )
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.error.collect {
+            error -> Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,9 +110,9 @@ fun AddPersonScreen(
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .clickable { imagePickerLauncher.launch("image/*") }
         ) {
-            if (newFaceImage != null) {
+            if (state.faceImage != null) {
                 ImageDisplay(
-                    uri = newFaceImage!!,
+                    uri = state.faceImage!!,
                     modifier = Modifier.matchParentSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -120,22 +126,12 @@ fun AddPersonScreen(
             }
         }
 
-        error?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
 
         TextInput(
             label = "Name",
-            value = newName,
-            onValueChange = { viewModel.updateName(it) },
+            value = state.name,
+            onValueChange = { viewModel.onAction(AddPersonAction.UpdateName(it)) },
             placeholder = { Text("Enter name...") }
         )
 
@@ -153,7 +149,7 @@ fun AddPersonScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = DetectionTypes[faceType]!!,
+                    text = DetectionTypes[state.faceType]!!,
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -172,24 +168,24 @@ fun AddPersonScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { viewModel.addFace() },
-            enabled = newName.isNotBlank() && newFaceImage != null,
+            onClick = { viewModel.onAction(AddPersonAction.SaveFace) },
+            enabled = state.name.isNotBlank() && state.faceImage != null,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         ) {
-            Text("Add person")
+            Text(if(state.faceToEdit != null) "Save person" else "Add person")
         }
     }
 
     OptionPicker(
         isVisible = isSelectingType,
         title = stringResource(id = R.string.setting_surveillance_mode),
-        selectedOption = faceType,
+        selectedOption = state.faceType,
         options = DetectionTypes.entries.map{ it.value to it.key},
         onClose = { isSelectingType = false },
         onSelect = {
-            viewModel.updateDetectionType(it)
+            viewModel.onAction(AddPersonAction.UpdateFaceType(it))
             isSelectingType = false
         }
     )
