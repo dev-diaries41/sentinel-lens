@@ -71,6 +71,8 @@ fun SettingsScreen(
         SettingActionConfig.Button(
             label = stringResource(id = R.string.setting_camera_type),
             onClick = { isSelectingCameraType = true},
+            description = getLabel(appSettings.cameraType, cameraOptions)
+
         ),
         SettingActionConfig.Button(
             label = stringResource(id = R.string.setting_frame_interval),
