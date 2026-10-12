@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.ui.screens.watchlist
+package com.fpf.sentinellens.ui.components.watchlist
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

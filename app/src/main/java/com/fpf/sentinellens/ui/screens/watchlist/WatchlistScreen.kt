@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.navigation.TopBarState
 import com.fpf.sentinellens.surveillance.Face
+import com.fpf.sentinellens.ui.components.watchlist.WatchlistItemCard
 import org.koin.compose.viewmodel.koinViewModel
 
 
@@ -127,11 +128,11 @@ fun WatchlistScreen(
                     ) { item ->
                         WatchlistItemCard(
                             data = item,
-                            onEdit = {onManagePerson(item.id)},
+                            onEdit = { onManagePerson(item.id) },
                             onDelete = {
                                 isDeleteAlertVisible = true
                                 selectedFace = item
-                                       },
+                            },
                         )
                     }
                 }
