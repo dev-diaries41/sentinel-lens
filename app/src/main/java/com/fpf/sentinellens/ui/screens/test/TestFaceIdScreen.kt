@@ -2,6 +2,7 @@ package com.fpf.sentinellens.ui.screens.test
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -24,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -43,11 +45,11 @@ fun TestFaceIdScreen(
     onTopBarChange: (TopBarState) -> Unit,
     onBack: () -> Unit,
 ) {
+    val context = LocalContext.current
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
     val selectedImage by viewModel.selectedImage.collectAsState()
     val blacklistResult by viewModel.blacklistSimilarity.collectAsState()
     val whitelistResult by viewModel.whitelistSimilarity.collectAsState()
-    val error by viewModel.error.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
     val settings by appSettings.collectAsState()
     val scrollState = rememberScrollState()
@@ -75,6 +77,12 @@ fun TestFaceIdScreen(
                 }
             )
         )
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.error.collect {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
     }
 
     Box(
@@ -159,9 +167,7 @@ fun TestFaceIdScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     enabled = !isLoading && hasAnyFaces == true,
-                    onClick = {
-                        viewModel.inference()
-                    },
+                    onClick = { viewModel.run() },
                 ) {
                     Text("Identify face")
 
@@ -202,15 +208,6 @@ fun TestFaceIdScreen(
                 if (result.isMatch) {
                     Text("Name: ${result.name}", style = MaterialTheme.typography.bodyMedium)
                 }
-            }
-
-
-            if (error != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text=error!!,
-                    color = MaterialTheme.colorScheme.error,
-                )
             }
         }
     }

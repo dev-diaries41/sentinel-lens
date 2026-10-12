@@ -18,9 +18,11 @@ import com.fpf.smartscansdk.core.media.drawBoxes
 import com.fpf.smartscansdk.core.media.getBitmapFromUri
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 
 class TestFaceIdViewModel(
@@ -49,8 +51,8 @@ class TestFaceIdViewModel(
 
     val selectedImageBoundedBoxes: StateFlow<Bitmap?> = _selectedImageBoundedBoxes
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
+    private val _error = MutableSharedFlow<String>()
+    val error = _error.asSharedFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _isLoading
@@ -60,15 +62,13 @@ class TestFaceIdViewModel(
     }
 
     fun reset() {
-        _error.value = null
         _blacklistSimilarity.value = null
         _whitelistSimilarity.value = null
         _selectedImage.value = null
         _selectedImageBoundedBoxes.value = null
     }
 
-    fun inference() {
-        _error.value = null
+    fun run() {
         _isLoading.value = true
 
         viewModelScope.launch(Dispatchers.IO) {
