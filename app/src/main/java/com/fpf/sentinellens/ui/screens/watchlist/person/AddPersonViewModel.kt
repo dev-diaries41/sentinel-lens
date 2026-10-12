@@ -12,14 +12,13 @@ import com.fpf.sentinellens.surveillance.Face
 import com.fpf.sentinellens.surveillance.FaceType
 import com.fpf.sentinellens.surveillance.NewFace
 import com.fpf.sentinellens.surveillance.file
-import com.fpf.sentinellens.utils.getBitmapFromUri
 import com.fpf.smartscansdk.core.media.cropFaces
+import com.fpf.smartscansdk.core.media.getBitmapFromUri
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update

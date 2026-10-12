@@ -49,12 +49,6 @@ fun cameraImageToBitmap(image: Image, rotationDegrees: Int = 0): Bitmap {
         bitmap
     }
 }
-
-fun getBitmapFromUri(context: Context, uri: Uri): Bitmap {
-    val source = ImageDecoder.createSource(context.contentResolver, uri)
-    return ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.ARGB_8888, true)
-}
-
 fun insertVideoIntoMediaStore(videoFile: File, context: Context): Uri? {
     val values = ContentValues().apply {
         put(MediaStore.Video.Media.DISPLAY_NAME, videoFile.name)
