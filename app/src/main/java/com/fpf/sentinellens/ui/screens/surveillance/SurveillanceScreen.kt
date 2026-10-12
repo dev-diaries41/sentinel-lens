@@ -64,10 +64,14 @@ fun SurveillanceScreen(
     val title = stringResource(R.string.title_surveillance)
 
     var hasCameraPermissions by remember{mutableStateOf(false)}
+    var hasRecordAudioPermissions by remember{mutableStateOf(false)}
     var isSelectingMode by remember { mutableStateOf(false) }
 
-    RequestPermissions { _, cameraGranted ->
+    val isSurveillanceEnabled = hasCameraPermissions && hasRecordAudioPermissions && hasAnyFaces == true
+
+    RequestPermissions { _, cameraGranted, audioGranted ->
         hasCameraPermissions = cameraGranted
+        hasRecordAudioPermissions = audioGranted
     }
 
     LaunchedEffect(Unit) {
@@ -186,6 +190,14 @@ fun SurveillanceScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+                if(!hasRecordAudioPermissions){
+                    Text(
+                        text = stringResource(R.string.surveillance_missing_record_permission),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(vertical=8.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 if (hasAnyFaces == false) {
                     Text(
                         text = stringResource(R.string.error_watchlist_not_setup_message),
@@ -204,11 +216,8 @@ fun SurveillanceScreen(
 
         RecordButton(
             isRecording = isSurveillanceActive,
-            enabled = hasCameraPermissions && hasAnyFaces == true,
-            onClick = {
-                if (isSurveillanceActive) viewModel.stopSurveillance()
-                else viewModel.startSurveillance()
-            },
+            enabled = isSurveillanceEnabled,
+            onClick = { if (isSurveillanceActive) viewModel.stopSurveillance() else viewModel.startSurveillance() },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 32.dp)

@@ -110,8 +110,14 @@ class VideoCaptureHelper(
 
         try {
             mediaRecorder.apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
                 setVideoSource(MediaRecorder.VideoSource.SURFACE)
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioEncodingBitRate(128_000)
+                setAudioSamplingRate(44_100)
+
                 setVideoEncoder(MediaRecorder.VideoEncoder.H264)
                 setVideoEncodingBitRate(BIT_RATE)
                 setVideoFrameRate(FRAME_RATE)
@@ -120,11 +126,10 @@ class VideoCaptureHelper(
 
                 val videoFile = createVideoFile()
                 videoFilePath = videoFile.absolutePath
-
                 setOutputFile(videoFile.absolutePath)
                 prepare()
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             Log.e(TAG, "MediaRecorder preparation failed", e)
             listener?.onError(e)
         }
