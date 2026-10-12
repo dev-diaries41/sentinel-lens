@@ -1,4 +1,4 @@
-package com.fpf.smartscan.ui.action
+package com.fpf.sentinellens.ui.action
 
 sealed interface SettingActionConfig {
     val enabled: Boolean
