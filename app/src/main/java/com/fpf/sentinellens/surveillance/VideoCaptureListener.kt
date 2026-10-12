@@ -10,9 +10,10 @@ import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.logs.DetectionLogEntity
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
+import com.fpf.sentinellens.notifications.NotificationChannels
+import com.fpf.sentinellens.notifications.showNotification
 import com.fpf.sentinellens.utils.cameraImageToBitmap
 import com.fpf.sentinellens.utils.insertVideoIntoMediaStore
-import com.fpf.sentinellens.utils.showNotification
 import com.fpf.smartscansdk.core.embeddings.getSimilarities
 import com.fpf.smartscansdk.core.embeddings.getTopN
 import com.fpf.smartscansdk.core.media.cropFaces
@@ -167,13 +168,15 @@ class VideoCaptureListener(
         if(telegramBotToken.isNotEmpty() && telegramChannelId.isNotEmpty()){
             val result = sendTelegramMessage(telegramBotToken, messageTitle, telegramChannelId, frame)
             result.onFailure { error ->
-                showNotification(application, application.getString(R.string.notif_alert_error_title), application.getString(R.string.notif_alert_error_content))
+                val errorTitle = application.getString(R.string.notif_alert_error_title)
+                val errorContent = application.getString(R.string.notif_alert_error_content)
+                showNotification(application, title=errorTitle, channelId = NotificationChannels.ALERTS, text=errorContent)
                 Log.e(TAG, "Error sending telegram alert: $error")
             }
         }else{
             val baseContent = application.getString(R.string.notif_detection_content)
             val content = if (name != null) "Detected person: $name. $baseContent" else baseContent
-            showNotification(application, title, content)
+            showNotification(application, title=title, channelId = NotificationChannels.ALERTS, text=content)
         }
     }
 }

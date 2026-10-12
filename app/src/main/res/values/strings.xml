@@ -75,10 +75,8 @@
     <string name="help_description_telegram_3">Alerts require the bot to be in your channel; the app works without Telegram but won\'t send real-time alerts.</string>
 
     <!--Notifications-->
-    <string name="sentinellens_general_channel_id">SentinelLensChannel</string>
-    <string name="sentinellens_general_channel_name">Sentinel Lens General Notifications</string>
-    <string name="surveillance_foreground_channel_id">SurveillanceServiceChannel</string>
-    <string name="surveillance_foreground_channel_name">Surveillance Foreground Notifications</string>
+    <string name="notif_alerts_channel_name">Alert Notifications</string>
+    <string name="notif_service_channel_name">Surveillance Service Notifications</string>
     <string name="notif_surveillance_foreground_title">Surveillance is live</string>
     <string name="notif_surveillance_foreground_content">Camera is recording video in foreground</string>
     <string name="notif_detection_title">Unauthorized person detected</string>

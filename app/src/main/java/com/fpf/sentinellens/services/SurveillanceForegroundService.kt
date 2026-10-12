@@ -1,7 +1,5 @@
 package com.fpf.sentinellens.services
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
@@ -14,12 +12,12 @@ import com.fpf.sentinellens.MainActivity
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.logs.DetectionLogRepository
+import com.fpf.sentinellens.notifications.NotificationChannels
 import com.fpf.sentinellens.surveillance.IVideoCaptureListener
 import com.fpf.sentinellens.surveillance.VideoCaptureHelper
 import com.fpf.sentinellens.surveillance.VideoCaptureListener
 import com.fpf.sentinellens.settings.loadSettings
 import com.fpf.sentinellens.surveillance.FaceType
-import com.fpf.sentinellens.utils.showNotification
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
 import org.koin.core.component.KoinComponent
@@ -50,7 +48,6 @@ class SurveillanceForegroundService : Service(), KoinComponent {
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
         startForegroundServiceNotification()
     }
 
@@ -60,9 +57,8 @@ class SurveillanceForegroundService : Service(), KoinComponent {
             this, 0, activityIntent, PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(this, getString(R.string.surveillance_foreground_channel_id))
+        val notification = NotificationCompat.Builder(this, NotificationChannels.SURVEILLANCE_SERVICE)
             .setContentTitle(getString(R.string.notif_surveillance_foreground_title))
-            .setContentText(getString(R.string.notif_surveillance_foreground_content))
             .setSmallIcon(R.drawable.icon)
             .setContentIntent(activityPendingIntent)
             .build()
@@ -70,31 +66,17 @@ class SurveillanceForegroundService : Service(), KoinComponent {
         startForeground(NOTIFICATION_ID, notification)
     }
 
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            getString(R.string.surveillance_foreground_channel_id),
-            getString(R.string.surveillance_foreground_channel_name),
-            NotificationManager.IMPORTANCE_LOW
-        )
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
             intent?.getSerializableExtra(MODE, FaceType::class.java)
         }else{
             intent?.getSerializableExtra(MODE) as? FaceType
-        }
+        }?: error("Invalid mode")
 
-        if(mode == null){
-            showNotification(application, "Error starting surveillance", "Unable to setup video capturer")
-        }else{
-            setupVideoCapturer(mode)
-            previewSurface?.let{ videoCaptureHelper.setPreviewSurface(surface = it) }
-            videoCaptureHelper.startCameraAndRecording()
-        }
-
+        setupVideoCapturer(mode)
+        previewSurface?.let{ videoCaptureHelper.setPreviewSurface(surface = it) }
+        videoCaptureHelper.startCameraAndRecording()
         return START_NOT_STICKY
     }
 
