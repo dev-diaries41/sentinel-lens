@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -174,7 +175,12 @@ fun AddPersonScreen(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         ) {
-            Text(if(state.faceToEdit != null) "Save person" else "Add person")
+            Icon(
+                imageVector = Icons.Filled.Save,
+                contentDescription = "Save",
+                modifier = Modifier.padding(end = 4.dp)
+            )
+            Text("Save")
         }
     }
 
