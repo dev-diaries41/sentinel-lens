@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
-import com.fpf.smartscan.ui.action.SettingActionConfig
+import com.fpf.sentinellens.ui.action.SettingActionConfig
 
 @Composable
 fun SettingSection(

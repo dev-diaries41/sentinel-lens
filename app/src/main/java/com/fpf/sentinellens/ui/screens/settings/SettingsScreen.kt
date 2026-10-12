@@ -32,7 +32,7 @@ import com.fpf.sentinellens.settings.getLabel
 import com.fpf.sentinellens.settings.maxDurationOptions
 import com.fpf.sentinellens.ui.components.pickers.OptionPicker
 import com.fpf.sentinellens.ui.components.settings.SettingSection
-import com.fpf.smartscan.ui.action.SettingActionConfig
+import com.fpf.sentinellens.ui.action.SettingActionConfig
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

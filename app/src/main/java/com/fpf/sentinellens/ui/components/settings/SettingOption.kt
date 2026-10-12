@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import com.fpf.smartscan.ui.action.SettingActionConfig
+import com.fpf.sentinellens.ui.action.SettingActionConfig
 
 @Composable
 fun SettingOption(config: SettingActionConfig, modifier: Modifier = Modifier) {

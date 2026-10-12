@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.fpf.smartscan.ui.action.ActionConfig
+import com.fpf.sentinellens.ui.action.ActionConfig
 
 @Composable
 fun ActionBar(
