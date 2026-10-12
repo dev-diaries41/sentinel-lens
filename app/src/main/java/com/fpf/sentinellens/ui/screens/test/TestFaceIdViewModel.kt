@@ -9,13 +9,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.surveillance.FaceType
-import com.fpf.sentinellens.utils.getBitmapFromUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.fpf.smartscansdk.core.embeddings.getSimilarities
 import com.fpf.smartscansdk.core.embeddings.getTopN
 import com.fpf.smartscansdk.core.media.cropFaces
 import com.fpf.smartscansdk.core.media.drawBoxes
+import com.fpf.smartscansdk.core.media.getBitmapFromUri
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
 import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,9 +45,9 @@ class TestFaceIdViewModel(
 
     private val _selectedImage = MutableStateFlow<Uri?>(null)
     val selectedImage: StateFlow<Uri?> = _selectedImage
-    private val _withBoxes = MutableStateFlow<Bitmap?>(null)
+    private val _selectedImageBoundedBoxes = MutableStateFlow<Bitmap?>(null)
 
-    val withBoxes: StateFlow<Bitmap?> = _withBoxes
+    val selectedImageBoundedBoxes: StateFlow<Bitmap?> = _selectedImageBoundedBoxes
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -55,15 +55,16 @@ class TestFaceIdViewModel(
     private val _isLoading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _isLoading
 
-    fun updateImageUri(uri: Uri?) {
-        _error.value = null
+    fun updateImageUri(uri: Uri) {
         _selectedImage.value = uri
     }
 
-    fun clearInferenceResult() {
+    fun reset() {
         _error.value = null
         _blacklistSimilarity.value = null
         _whitelistSimilarity.value = null
+        _selectedImage.value = null
+        _selectedImageBoundedBoxes.value = null
     }
 
     fun inference() {
@@ -94,7 +95,7 @@ class TestFaceIdViewModel(
                 }
 
                 val drawnBoxes = drawBoxes(bitmap, boxes, Color.GREEN)
-                _withBoxes.emit(drawnBoxes)
+                _selectedImageBoundedBoxes.emit(drawnBoxes)
 
                 val allImageEmbeddings = repository.getAllFacesSync()
                 val blacklist = allImageEmbeddings.filter{it.type == FaceType.BLACKLIST }
