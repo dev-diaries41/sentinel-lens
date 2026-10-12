@@ -28,14 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.surveillance.DetectionTypes
+import com.fpf.sentinellens.surveillance.Face
 import com.fpf.sentinellens.surveillance.FaceType
+import com.fpf.sentinellens.surveillance.file
 import com.fpf.sentinellens.ui.components.ImageDisplay
 
 
@@ -45,6 +47,7 @@ fun WatchlistItemCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
 
     Card (
@@ -58,7 +61,7 @@ fun WatchlistItemCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ImageDisplay(
-                uri = data.id.toUri(),
+                uri = data.file(context).toUri(),
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(64.dp)

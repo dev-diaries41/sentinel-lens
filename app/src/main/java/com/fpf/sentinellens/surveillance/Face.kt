@@ -1,5 +1,10 @@
 package com.fpf.sentinellens.surveillance
 
+import android.content.Context
+import android.net.Uri
+import androidx.core.net.toUri
+import java.io.File
+
 data class Face(
     val id: Long,
     val date: Long,
@@ -17,3 +22,5 @@ data class NewFace(
     val path: String
 )
 
+fun Face.file(context: Context): File = File(context.filesDir, path)
+fun NewFace.file(context: Context): File = File(context.filesDir, path)

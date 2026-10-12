@@ -7,9 +7,11 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
+import com.fpf.sentinellens.surveillance.Face
 import com.fpf.sentinellens.surveillance.FaceType
+import com.fpf.sentinellens.surveillance.NewFace
+import com.fpf.sentinellens.surveillance.file
 import com.fpf.sentinellens.utils.getBitmapFromUri
 import com.fpf.smartscansdk.core.media.cropFaces
 import com.fpf.smartscansdk.ml.detectors.FaceDetector
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.UUID
 
 class AddPersonViewModel(
     application: Application,
@@ -36,10 +39,11 @@ class AddPersonViewModel(
     private val _faceType = MutableStateFlow(FaceType.BLACKLIST)
     val faceType: StateFlow<FaceType> = _faceType
 
+    private val _face = MutableStateFlow<Face?>(null)
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    private val _isEditing = MutableStateFlow(false)
 
     fun updateName(name: String){
         _newName.value = name
@@ -57,20 +61,17 @@ class AddPersonViewModel(
     fun reset(){
         _newName.value = ""
         _newFaceImage.value = null
+        _face.value = null
     }
 
-    fun onEditing(faceId: String){
-        _isEditing.value = true
+    fun setFace(faceId: Long){
         viewModelScope.launch(Dispatchers.IO){
             val faceToEdit = repository.getFace(faceId)
-            updateFaceImage(faceId.toUri())
+            _face.value = faceToEdit
+            updateFaceImage(faceToEdit.file(getApplication()).toUri())
             updateName(faceToEdit.name)
             updateDetectionType(faceToEdit.type)
         }
-    }
-
-    fun stopEditing(){
-        _isEditing.value = false
     }
 
     fun addFace(){
@@ -96,21 +97,30 @@ class AddPersonViewModel(
                 }
 
                 val faceEmbeddings = faceComparer.embed(faces[0])
-                val filePath = "faces/${newFaceImage.toString().hashCode()}.jpg"
-                val file = File(getApplication<Application>().filesDir, filePath)
 
-                // TOOD: add error handling
-                saveImageLocally(faces[0], file)
-
-                val id = if(_isEditing.value) newFaceImage.toString() else file.toUri().toString()
-
-                repository.insert(Face(
-                    id = id,
-                    date = System.currentTimeMillis(),
-                    type = type,
-                    name = name,
-                    embeddings = faceEmbeddings
-                ))
+                if(_face.value != null){
+                    val face = Face(
+                        id = _face.value?.id!!,
+                        date = System.currentTimeMillis(),
+                        type = type,
+                        name = name,
+                        embeddings = faceEmbeddings,
+                        path = _face.value?.path!!
+                    )
+                    repository.update(face)
+                    saveImageLocally(faces[0], face.file(getApplication()))
+                }else{
+                    val path = createFilePath()
+                    val face = NewFace(
+                        date = System.currentTimeMillis(),
+                        type = type,
+                        name = name,
+                        embeddings = faceEmbeddings,
+                        path = path
+                    )
+                    repository.insert(face)
+                    saveImageLocally(faces[0], face.file(getApplication()))
+                }
 
                 reset()
 
@@ -132,4 +142,5 @@ class AddPersonViewModel(
         }
     }
 
+    private fun createFilePath(): String = "faces/${UUID.randomUUID()}.jpg"
 }

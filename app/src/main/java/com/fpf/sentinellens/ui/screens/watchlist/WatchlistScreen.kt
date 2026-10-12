@@ -28,8 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.navigation.TopBarState
+import com.fpf.sentinellens.surveillance.Face
 import org.koin.compose.viewmodel.koinViewModel
 
 
@@ -37,7 +37,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun WatchlistScreen(
     viewModel: WatchlistViewModel = koinViewModel(),
     onTopBarChange: (TopBarState) -> Unit,
-    onManagePerson: (String?) -> Unit,
+    onManagePerson: (Long?) -> Unit,
     onViewLogs: () -> Unit,
     onTestSurveillance: () -> Unit
 ) {

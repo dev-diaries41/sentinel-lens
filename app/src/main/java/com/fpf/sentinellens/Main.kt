@@ -75,14 +75,12 @@ fun MainScreen() {
                 }
                 composable(Routes.WATCHLIST) {
                     WatchlistScreen(
-                        onManagePerson = { faceId: String? ->
-                            val encoded = faceId?.let {
-                                URLEncoder.encode(
-                                    it,
-                                    StandardCharsets.UTF_8.toString()
-                                )
-                            } ?: ""
-                            navController.navigate(Routes.addPerson(encoded))
+                        onManagePerson = { faceId: Long? ->
+                            navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(NavDataKeys.FACE_ID, faceId)
+
+                            navController.navigate(Routes.ADD_PERSON)
                         },
                         onTopBarChange = { topBarState.value = it },
                         onViewLogs = {navController.navigate(Routes.LOG)},
@@ -90,14 +88,8 @@ fun MainScreen() {
                         )
                 }
 
-                composable(
-                    Routes.ADD_PERSON,
-                    arguments = listOf(navArgument(NavDataKeys.FACE_ID) { type = NavType.StringType }
-                    )
-                ) { navBackStackEntry ->
-                    val faceId = navBackStackEntry.arguments?.getString(NavDataKeys.FACE_ID)?.let {
-                        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-                    }
+                composable(Routes.ADD_PERSON) { _ ->
+                    val faceId = navController.previousBackStackEntry?.savedStateHandle?.get<Long?>(NavDataKeys.FACE_ID)
                     AddPersonScreen(
                         faceId = faceId,
                         onTopBarChange = { topBarState.value = it },

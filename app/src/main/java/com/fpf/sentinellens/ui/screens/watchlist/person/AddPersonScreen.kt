@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,7 +51,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun AddPersonScreen(
     viewModel: AddPersonViewModel = koinViewModel(),
-    faceId: String? = null,
+    faceId: Long? = null,
     onTopBarChange: (TopBarState) -> Unit,
     onBack: () -> Unit,
 ) {
@@ -71,13 +70,9 @@ fun AddPersonScreen(
 
     var isSelectingType by remember { mutableStateOf(false) }
 
-    DisposableEffect(faceId) {
-        if (!faceId.isNullOrBlank()) {
-            viewModel.onEditing(faceId)
-        }
-
-        onDispose {
-            viewModel.stopEditing()
+    LaunchedEffect(faceId) {
+        if (faceId != null) {
+            viewModel.setFace(faceId)
         }
     }
 

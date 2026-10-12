@@ -24,8 +24,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.logs.DetectionLogEntity
+import com.fpf.sentinellens.data.oldlogs.OldLogEntity
 import com.fpf.sentinellens.navigation.TopBarState
+import com.fpf.sentinellens.surveillance.DetectionLog
 import com.fpf.sentinellens.utils.toDateString
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -109,7 +110,7 @@ fun DetectionLogScreen(
 }
 
 @Composable
-fun DetectionLogItemCard(data: DetectionLogEntity) {
+fun DetectionLogItemCard(data: DetectionLog) {
     Card(
         elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 0.dp)

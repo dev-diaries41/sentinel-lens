@@ -11,7 +11,8 @@ import androidx.core.app.NotificationCompat
 import com.fpf.sentinellens.MainActivity
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.FacesRepository
-import com.fpf.sentinellens.data.logs.DetectionLogRepository
+import com.fpf.sentinellens.data.logs.LogRepository
+import com.fpf.sentinellens.data.oldlogs.OldLogRepository
 import com.fpf.sentinellens.notifications.NotificationChannels
 import com.fpf.sentinellens.surveillance.IVideoCaptureListener
 import com.fpf.sentinellens.surveillance.VideoCaptureHelper
@@ -39,7 +40,7 @@ class SurveillanceForegroundService : Service(), KoinComponent {
     private var videoCaptureListener: IVideoCaptureListener? = null
 
     private val facesRepository: FacesRepository by inject()
-    private val detectionLogRepository: DetectionLogRepository by inject()
+    private val detectionLogRepository: LogRepository by inject()
     private val faceComparer: InceptionResnetFaceEmbedder by inject()
     private val faceDetector: FaceDetector by inject()
     private val sharedPrefs: SharedPreferences by inject()

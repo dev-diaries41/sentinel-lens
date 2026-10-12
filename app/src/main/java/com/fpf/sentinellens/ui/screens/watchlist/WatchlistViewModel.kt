@@ -1,12 +1,10 @@
 package com.fpf.sentinellens.ui.screens.watchlist
 
 import android.app.Application
-import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
-import kotlinx.coroutines.Dispatchers
+import com.fpf.sentinellens.surveillance.Face
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -21,7 +19,7 @@ class WatchlistViewModel(
         SharingStarted.Lazily, emptyList())
 
 
-    fun deleteFace(id: String){
+    fun deleteFace(id: Long){
         viewModelScope.launch {
             repository.delete(id)
             val filePath = "faces/${id.hashCode()}.jpg"

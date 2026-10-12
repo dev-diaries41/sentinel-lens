@@ -6,10 +6,8 @@ import android.media.Image
 import android.util.Log
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.api.sendTelegramMessage
-import com.fpf.sentinellens.data.faces.Face
 import com.fpf.sentinellens.data.faces.FacesRepository
-import com.fpf.sentinellens.data.logs.DetectionLogEntity
-import com.fpf.sentinellens.data.logs.DetectionLogRepository
+import com.fpf.sentinellens.data.logs.LogRepository
 import com.fpf.sentinellens.notifications.NotificationChannels
 import com.fpf.sentinellens.notifications.showNotification
 import com.fpf.sentinellens.utils.cameraImageToBitmap
@@ -34,7 +32,7 @@ class VideoCaptureListener(
     private val faceComparer: InceptionResnetFaceEmbedder,
     private val faceDetector: FaceDetector,
     private val faceRepository: FacesRepository,
-    private val detectionLogRepository: DetectionLogRepository
+    private val detectionLogRepository: LogRepository
 ): IVideoCaptureListener
 {
     private var blackList: List<Face>? = null
@@ -150,10 +148,9 @@ class VideoCaptureListener(
 
         try {
             detectionLogRepository.insert(
-                DetectionLogEntity(
-                    id = System.currentTimeMillis().toString(),
+                NewDetectionLog(
                     date = System.currentTimeMillis(),
-                    type = DetectionTypes[detectionType]!!,
+                    type = detectionType,
                     name = name,
                     similarity = similarity
                 )
