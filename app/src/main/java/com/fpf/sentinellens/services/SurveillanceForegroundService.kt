@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.IBinder
 import android.view.Surface
 import androidx.core.app.NotificationCompat
@@ -12,7 +11,6 @@ import com.fpf.sentinellens.MainActivity
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.data.faces.FacesRepository
 import com.fpf.sentinellens.data.logs.LogRepository
-import com.fpf.sentinellens.data.oldlogs.OldLogRepository
 import com.fpf.sentinellens.notifications.NotificationChannels
 import com.fpf.sentinellens.surveillance.IVideoCaptureListener
 import com.fpf.sentinellens.surveillance.VideoCaptureHelper
@@ -69,12 +67,7 @@ class SurveillanceForegroundService : Service(), KoinComponent {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            intent?.getSerializableExtra(MODE, FaceType::class.java)
-        }else{
-            intent?.getSerializableExtra(MODE) as? FaceType
-        }?: error("Invalid mode")
-
+        val mode = FaceType.valueOf(intent?.getStringExtra(MODE)?: error("Invalid mode"))
         setupVideoCapturer(mode)
         previewSurface?.let{ videoCaptureHelper.setPreviewSurface(surface = it) }
         videoCaptureHelper.startCameraAndRecording()

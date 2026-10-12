@@ -1,6 +1,5 @@
 package com.fpf.sentinellens.ui.screens.surveillance
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
@@ -30,11 +29,10 @@ class SurveillanceViewModel(
     fun startSurveillance() {
         _isSurveillanceActive.value = true
         Intent(getApplication(), SurveillanceForegroundService::class.java)
-            .putExtra(SurveillanceForegroundService.MODE, _detectionMode.value)
+            .putExtra(SurveillanceForegroundService.MODE, _detectionMode.value.name)
             .also{ intent -> getApplication<Application>().startForegroundService(intent) }
     }
 
-    @SuppressLint("ImplicitSamInstance")
     fun stopSurveillance() {
         _isSurveillanceActive.value = false
         getApplication<Application>().stopService(Intent(getApplication(), SurveillanceForegroundService::class.java))
