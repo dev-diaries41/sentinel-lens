@@ -58,16 +58,16 @@ fun SurveillanceScreen(
     onTestSurveillance: () -> Unit
 ) {
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
-    val hasPermissions by viewModel.hasPermissions.collectAsState(false)
     val isSurveillanceActive by viewModel.isSurveillanceActive.collectAsState()
     val detectionMode by viewModel.detectionMode.collectAsState()
     val scrollState = rememberScrollState()
     val title = stringResource(R.string.title_surveillance)
 
+    var hasCameraPermissions by remember{mutableStateOf(false)}
     var isSelectingMode by remember { mutableStateOf(false) }
 
-    RequestPermissions { notificationGranted, cameraGranted ->
-        viewModel.checkPermissions(notificationGranted, cameraGranted)
+    RequestPermissions { _, cameraGranted ->
+        hasCameraPermissions = cameraGranted
     }
 
     LaunchedEffect(Unit) {
@@ -178,28 +178,33 @@ fun SurveillanceScreen(
                         modifier = Modifier.size(180.dp)
                     )
                 }
-
+                if(!hasCameraPermissions){
+                    Text(
+                        text = stringResource(R.string.surveillance_missing_camera_permission),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(vertical=8.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                if (hasAnyFaces == false) {
+                    Text(
+                        text = stringResource(R.string.error_watchlist_not_setup_message),
+                        modifier = Modifier.padding(vertical=8.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
                 Text(
                     text = stringResource(R.string.surveillance_notice_message),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center
                 )
-
-                if (hasAnyFaces == false) {
-                    Text(
-                        text = stringResource(R.string.error_watchlist_not_setup_message),
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-
             }
         }
 
         RecordButton(
             isRecording = isSurveillanceActive,
-            enabled = hasPermissions && hasAnyFaces == true,
+            enabled = hasCameraPermissions && hasAnyFaces == true,
             onClick = {
                 if (isSurveillanceActive) viewModel.stopSurveillance()
                 else viewModel.startSurveillance()

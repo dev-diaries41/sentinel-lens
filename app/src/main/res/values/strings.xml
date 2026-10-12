@@ -25,6 +25,7 @@
 
     <!--Surveillance Screen-->
     <string name="surveillance_notice_message">Start facial recognition surveillance now and get alerts when unauthorised people are detected.</string>
+    <string name="surveillance_missing_camera_permission">Missing camera permission.</string>
 
     <!--Watchlist screen -->
     <string name="no_entries">Empty Watchlist</string>
