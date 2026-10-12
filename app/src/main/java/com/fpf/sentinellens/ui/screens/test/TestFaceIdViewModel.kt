@@ -39,11 +39,11 @@ class TestFaceIdViewModel(
 
     val hasAnyFaces: StateFlow<Boolean?> = repository.hasAnyFaces.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    private val _blacklistSimilarity = MutableStateFlow<FaceIdResult?>(null)
-    val blacklistSimilarity: StateFlow<FaceIdResult?> = _blacklistSimilarity
+    private val _blacklistResult = MutableStateFlow<FaceIdResult?>(null)
+    val blacklistResult: StateFlow<FaceIdResult?> = _blacklistResult
 
-    private val _whitelistSimilarity = MutableStateFlow<FaceIdResult?>(null)
-    val whitelistSimilarity: StateFlow<FaceIdResult?> = _whitelistSimilarity
+    private val _whitelistResult = MutableStateFlow<FaceIdResult?>(null)
+    val whitelistResult: StateFlow<FaceIdResult?> = _whitelistResult
 
     private val _selectedImage = MutableStateFlow<Uri?>(null)
     val selectedImage: StateFlow<Uri?> = _selectedImage
@@ -62,8 +62,8 @@ class TestFaceIdViewModel(
     }
 
     fun reset() {
-        _blacklistSimilarity.value = null
-        _whitelistSimilarity.value = null
+        _blacklistResult.value = null
+        _whitelistResult.value = null
         _selectedImage.value = null
         _selectedImageBoundedBoxes.value = null
     }
@@ -111,7 +111,7 @@ class TestFaceIdViewModel(
                         name=name,
                         similarity = sim
                     )
-                    _blacklistSimilarity.emit(result)
+                    _blacklistResult.emit(result)
                 }
 
                 if(whitelist.isNotEmpty()){
@@ -124,7 +124,7 @@ class TestFaceIdViewModel(
                         name=name,
                         similarity = sim
                     )
-                    _whitelistSimilarity.emit(result)
+                    _whitelistResult.emit(result)
                 }
             } catch (e: Exception) {
                 Log.e("FaceIdViewModel", "Inference failed: ${e.message}", e)

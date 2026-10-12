@@ -22,12 +22,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.fpf.sentinellens.R
 import com.fpf.sentinellens.navigation.TopBarState
@@ -48,8 +45,8 @@ fun TestFaceIdScreen(
     val context = LocalContext.current
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
     val selectedImage by viewModel.selectedImage.collectAsState()
-    val blacklistResult by viewModel.blacklistSimilarity.collectAsState()
-    val whitelistResult by viewModel.whitelistSimilarity.collectAsState()
+    val blacklistResult by viewModel.blacklistResult.collectAsState()
+    val whitelistResult by viewModel.whitelistResult.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
     val settings by appSettings.collectAsState()
     val scrollState = rememberScrollState()
