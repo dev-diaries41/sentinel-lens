@@ -2,6 +2,8 @@ package com.fpf.sentinellens.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -19,9 +21,12 @@ import androidx.compose.ui.window.PopupProperties
 fun UpdatePopUp(
     isVisible: Boolean,
     onClose: () -> Unit,
-    updates: List<String>
+    updates: List<String>,
+    notes: String? = null
 ) {
     if (!isVisible) return
+
+    val scrollState = rememberScrollState()
 
     Popup(
         onDismissRequest = { onClose() },
@@ -34,7 +39,7 @@ fun UpdatePopUp(
                 .padding(16.dp)
         ) {
             Column(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier.align(Alignment.Center).verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
@@ -64,12 +69,24 @@ fun UpdatePopUp(
                         )
                     }
                 }
+
+                notes?.takeIf { it.isNotBlank() }?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Button(
                 onClick = onClose,
                 shape = MaterialTheme.shapes.extraLarge,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(vertical = 16.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(vertical = 16.dp)
             ) {
                 Text("Continue")
             }
