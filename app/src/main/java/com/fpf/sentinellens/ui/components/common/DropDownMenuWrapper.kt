@@ -15,10 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.fpf.smartscan.ui.action.MenuActionConfig
+import com.fpf.sentinellens.ui.action.MenuActionConfig
 
 @Composable
 fun DropDownMenuWrapper(

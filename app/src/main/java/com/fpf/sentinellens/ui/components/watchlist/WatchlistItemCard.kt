@@ -1,7 +1,5 @@
 package com.fpf.sentinellens.ui.components.watchlist
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,13 +7,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +37,8 @@ import com.fpf.sentinellens.surveillance.Face
 import com.fpf.sentinellens.surveillance.FaceType
 import com.fpf.sentinellens.surveillance.file
 import com.fpf.sentinellens.ui.components.ImageDisplay
+import com.fpf.sentinellens.ui.action.MenuActionConfig
+import com.fpf.sentinellens.ui.components.common.DropDownMenuWrapper
 
 
 @Composable
@@ -48,7 +48,12 @@ fun WatchlistItemCard(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    var expanded by remember { mutableStateOf(false) }
+    val actions: List<MenuActionConfig> = listOf(
+        MenuActionConfig.Button(label ="Edit", onClick = onEdit ),
+        MenuActionConfig.Button(label ="Delete", onClick = onDelete )
+    )
+    var showMenu by remember { mutableStateOf(false) }
+
 
     Card (
         modifier = Modifier
@@ -79,30 +84,19 @@ fun WatchlistItemCard(
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
-                    Box() {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More options",
-                            modifier = Modifier
-                                .clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) { expanded = true }
-                        )
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Edit") },
-                                onClick = { expanded = false; onEdit() }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Delete") },
-                                onClick = { expanded = false; onDelete() }
+                    Box{
+                        IconButton (onClick = { showMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = "menu"
                             )
                         }
+                        DropDownMenuWrapper(
+                            modifier = Modifier.widthIn(min = 144.dp) ,
+                            expanded = showMenu,
+                            actions = actions,
+                            onClose = {showMenu = false}
+                        )
                     }
 
                 }
