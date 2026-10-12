@@ -2,16 +2,29 @@ package com.fpf.sentinellens
 
 
 import android.app.Application
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
-import com.fpf.sentinellens.lib.Storage
+import com.fpf.sentinellens.constants.PrefsKeys
+import com.fpf.sentinellens.data.DataSyncHelper
+import com.fpf.sentinellens.data.faces.FacesRepository
+import com.fpf.sentinellens.data.logs.LogRepository
+import com.fpf.sentinellens.data.oldlogs.DetectionLogDatabase
+import com.fpf.sentinellens.data.oldlogs.OldLogRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
 
-class MainViewModel( application: Application) : AndroidViewModel(application) {
+class MainViewModel(
+    application: Application,
+    private val sharedPrefs: SharedPreferences,
+    private val logRepository: LogRepository,
+    private val facesRepository: FacesRepository
+    ) : AndroidViewModel(application) {
     companion object {
-        private const val UPDATES_KEY = "UPDATES_KEY"
+        private const val TAG = "MainViewModel"
     }
-    val storage = Storage.getInstance(getApplication())
 
     val versionName: String? = try {
         val packageInfo = application.packageManager.getPackageInfo(application.packageName, 0)
@@ -20,23 +33,39 @@ class MainViewModel( application: Application) : AndroidViewModel(application) {
         null
     }
 
-    private val _isUpdatePopUpVisible = MutableStateFlow(!hasShownUpdatePopUp)
-    val  isUpdatePopUpVisible: StateFlow<Boolean> = _isUpdatePopUpVisible
+    private val hasSyncedData: Boolean
+        get() = sharedPrefs.getBoolean(PrefsKeys.DATA_SYNC, false)
 
-    val hasShownUpdatePopUp: Boolean
-        get() = storage.getItem(UPDATES_KEY) == versionName
+    private val storedVersion: String?
+        get() = sharedPrefs.getString(PrefsKeys.UPDATES, null)
+
+    private val _isUpdatePopUpVisible = MutableStateFlow(storedVersion != versionName && storedVersion != null)
+    val  isUpdatePopUpVisible: StateFlow<Boolean> = _isUpdatePopUpVisible
 
     fun closeUpdatePopUp(){
         _isUpdatePopUpVisible.value = false
-        storage.setItem(UPDATES_KEY, versionName.toString())
+        sharedPrefs.edit { putString(PrefsKeys.UPDATES, versionName.toString()) }
     }
 
     fun getUpdates(): List<String>{
         return listOf(
-            getApplication<Application>().getString(R.string.update_logs_screen),
-            getApplication<Application>().getString(R.string.update_help_screen),
-            getApplication<Application>().getString(R.string.update_person_edits),
-            getApplication<Application>().getString(R.string.update_video_saving),
+            getApplication<Application>().getString(R.string.update_record_audio),
+            getApplication<Application>().getString(R.string.update_ui_improvements),
             )
     }
+
+    suspend fun prepareApp(){
+        if(hasSyncedData) return
+        withContext(Dispatchers.IO) {
+            val oldLogRepository = OldLogRepository(DetectionLogDatabase.getDatabase(getApplication()).detectionLogsDao())
+            DataSyncHelper.transferLogs(oldLogRepository = oldLogRepository, logRepository = logRepository)
+            DataSyncHelper.transformFacePaths(getApplication(), facesRepository)
+        }
+        sharedPrefs.edit { putBoolean(PrefsKeys.DATA_SYNC, true) }
+
+        if(storedVersion == null) setVersion()
+    }
+
+   private fun setVersion() = sharedPrefs.edit { putString(PrefsKeys.UPDATES, versionName.toString()) }
+
 }

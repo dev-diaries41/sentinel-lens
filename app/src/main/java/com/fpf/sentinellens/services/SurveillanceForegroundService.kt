@@ -1,27 +1,28 @@
 package com.fpf.sentinellens.services
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.os.Build
+import android.content.SharedPreferences
 import android.os.IBinder
-import android.util.Log
 import android.view.Surface
 import androidx.core.app.NotificationCompat
 import com.fpf.sentinellens.MainActivity
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.faces.FaceType
-import com.fpf.sentinellens.lib.Storage
-import com.fpf.sentinellens.lib.camera.IMlVideoCaptureListener
-import com.fpf.sentinellens.lib.camera.VideoCaptureHelper
-import com.fpf.sentinellens.lib.camera.VideoCaptureListener
-import com.fpf.sentinellens.lib.showNotification
-import com.fpf.sentinellens.ui.screens.settings.AppSettings
-import kotlinx.serialization.json.Json
+import com.fpf.sentinellens.data.faces.FacesRepository
+import com.fpf.sentinellens.data.logs.LogRepository
+import com.fpf.sentinellens.notifications.NotificationChannels
+import com.fpf.sentinellens.surveillance.IVideoCaptureListener
+import com.fpf.sentinellens.surveillance.VideoCaptureHelper
+import com.fpf.sentinellens.surveillance.VideoCaptureListener
+import com.fpf.sentinellens.settings.loadSettings
+import com.fpf.sentinellens.surveillance.FaceType
+import com.fpf.smartscansdk.ml.detectors.FaceDetector
+import com.fpf.smartscansdk.ml.embeddings.inception.InceptionResnetFaceEmbedder
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class SurveillanceForegroundService : Service() {
+class SurveillanceForegroundService : Service(), KoinComponent {
     companion object {
         private const val NOTIFICATION_ID = 102
         const val MODE = "mode"
@@ -34,11 +35,18 @@ class SurveillanceForegroundService : Service() {
     }
 
     private lateinit var videoCaptureHelper: VideoCaptureHelper
-    private var videoCaptureListener: IMlVideoCaptureListener? = null
+    private var videoCaptureListener: IVideoCaptureListener? = null
+
+    private val facesRepository: FacesRepository by inject()
+    private val detectionLogRepository: LogRepository by inject()
+    private val faceComparer: InceptionResnetFaceEmbedder by inject()
+    private val faceDetector: FaceDetector by inject()
+    private val sharedPrefs: SharedPreferences by inject()
+
+
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
         startForegroundServiceNotification()
     }
 
@@ -48,9 +56,8 @@ class SurveillanceForegroundService : Service() {
             this, 0, activityIntent, PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(this, getString(R.string.surveillance_foreground_channel_id))
+        val notification = NotificationCompat.Builder(this, NotificationChannels.SURVEILLANCE_SERVICE)
             .setContentTitle(getString(R.string.notif_surveillance_foreground_title))
-            .setContentText(getString(R.string.notif_surveillance_foreground_content))
             .setSmallIcon(R.drawable.icon)
             .setContentIntent(activityPendingIntent)
             .build()
@@ -58,70 +65,45 @@ class SurveillanceForegroundService : Service() {
         startForeground(NOTIFICATION_ID, notification)
     }
 
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            getString(R.string.surveillance_foreground_channel_id),
-            getString(R.string.surveillance_foreground_channel_name),
-            NotificationManager.IMPORTANCE_LOW
-        )
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            intent?.getSerializableExtra(MODE, FaceType::class.java)
-        }else{
-            intent?.getSerializableExtra(MODE) as? FaceType
-        }
-
-        if(mode == null){
-            showNotification(application, "Error starting surveillance", "Unable to setup video capturer")
-        }else{
-            setupVideoCapturer(mode)
-            previewSurface?.let{ videoCaptureHelper.setPreviewSurface(surface = it) }
-            videoCaptureHelper.startCameraAndRecording()
-        }
-
+        val mode = FaceType.valueOf(intent?.getStringExtra(MODE)?: error("Invalid mode"))
+        setupVideoCapturer(mode)
+        previewSurface?.let{ videoCaptureHelper.setPreviewSurface(surface = it) }
+        videoCaptureHelper.startCameraAndRecording()
         return START_NOT_STICKY
     }
 
     override fun onDestroy() {
         videoCaptureHelper.stopVideoCapture()
-        videoCaptureListener?.closeSession()
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun setupVideoCapturer(mode: FaceType){
-        val storage = Storage.getInstance(application)
-        val jsonSettings = storage.getItem("app_settings")
-        val appSettings = if (jsonSettings != null) {
-            try {
-                Json.decodeFromString<AppSettings>(jsonSettings)
-            } catch (e: Exception) {
-                Log.e("Settings", "Failed to decode settings", e)
-                AppSettings()
-            }
-        } else {
-            AppSettings()
-        }
+        val settings = loadSettings(sharedPrefs)
 
         videoCaptureListener = VideoCaptureListener(
             application,
-            threshold = appSettings.similarityThreshold,
-            alertFrequency = appSettings.alertFrequency,
-            telegramBotToken = appSettings.telegramBotToken,
-            telegramChannelId = appSettings.telegramChannelId,
-            mode = mode
+            threshold = settings.similarityThreshold,
+            alertFrequency = settings.alertFrequency,
+            telegramBotToken = settings.telegramBotToken,
+            telegramChannelId = settings.telegramChannelId,
+            mode = mode,
+            faceDetector = faceDetector,
+            faceComparer = faceComparer,
+            faceRepository = facesRepository,
+            detectionLogRepository = detectionLogRepository
         )
-        videoCaptureHelper = VideoCaptureHelper(this,
+
+        videoCaptureHelper = VideoCaptureHelper(
+            context= applicationContext,
             listener = videoCaptureListener,
             isFrameProcessingActive = true,
-            frameInterval = appSettings.frameInterval,
-            maxDuration = appSettings.maxDuration,
-            lensFacing = appSettings.cameraType
+            frameInterval = settings.frameInterval,
+            maxDuration = settings.maxDuration,
+            lensFacing = settings.cameraType
         )
     }
 }

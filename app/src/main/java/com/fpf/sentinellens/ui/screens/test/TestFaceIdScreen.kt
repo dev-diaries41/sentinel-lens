@@ -1,39 +1,87 @@
 package com.fpf.sentinellens.ui.screens.test
 
-import androidx.compose.ui.graphics.Color
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.ui.components.ImageUploader
-import com.fpf.sentinellens.ui.screens.settings.SettingsViewModel
+import com.fpf.sentinellens.navigation.TopBarState
+import com.fpf.sentinellens.settings.AppSettings
+import com.fpf.sentinellens.ui.components.ImageDisplay
+import com.fpf.sentinellens.ui.components.common.LoadingIndicator
+import com.fpf.sentinellens.ui.components.surveillance.FaceIdResultCard
+import kotlinx.coroutines.flow.StateFlow
+import org.koin.compose.viewmodel.koinViewModel
+import java.util.Locale
 
 @SuppressLint("DefaultLocale")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewModel: SettingsViewModel) {
+fun TestFaceIdScreen(
+    viewModel: TestFaceIdViewModel = koinViewModel(),
+    appSettings: StateFlow<AppSettings>,
+    onTopBarChange: (TopBarState) -> Unit,
+    onBack: () -> Unit,
+) {
+    val context = LocalContext.current
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
-    val selectedImage by viewModel.selectedImage.collectAsState()
-    val blacklistResult by viewModel.blacklistSimilarity.collectAsState()
-    val whitelistResult by viewModel.whitelistSimilarity.collectAsState()
-    val error by viewModel.error.collectAsState()
-    val isLoading by viewModel.loading.collectAsState()
-    val settings by settingsViewModel.appSettings.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val settings by appSettings.collectAsState()
     val scrollState = rememberScrollState()
+    val title = stringResource(R.string.title_face_id)
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let { viewModel.updateImageUri(it) }
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = title,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.error.collect {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -46,15 +94,64 @@ fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewM
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            ImageUploader(
-                imageUri = selectedImage,
-                onImageSelected = { images ->
-                    viewModel.updateImageUri(images)
-                    if (selectedImage == null) {
-                        viewModel.clearInferenceResult()
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.medium)
+                    .border(width = 1.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), shape = MaterialTheme.shapes.medium)
+                    .clip(MaterialTheme.shapes.medium)
+                    .clickable { imagePickerLauncher.launch("image/*") }
+//
+            ) {
+                if (state.selectedImage != null) {
+                    if(state.selectedImageBoundedBoxes != null){
+                        ImageDisplay(
+                            bitmap = state.selectedImageBoundedBoxes!!,
+                            modifier = Modifier.matchParentSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }else{
+                        ImageDisplay(
+                            uri = state.selectedImage!!,
+                            modifier = Modifier.matchParentSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    IconButton(
+                        onClick = { viewModel.reset() },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = (-6).dp, y = 6.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f))
+                            .size(16.dp)
+                            .padding(2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Remove Image",
+                            tint = MaterialTheme.colorScheme.inversePrimary
+                        )
+                    }
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize().padding(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Person icon",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.fillMaxSize(0.8f)
+                        )
+                        Text(
+                            text= "Upload image",
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     }
                 }
-            )
+            }
 
             if (hasAnyFaces == false) {
                 Text(
@@ -64,83 +161,56 @@ fun TestFaceIdScreen(viewModel: TestFaceIdViewModel = viewModel(), settingsViewM
                     )
             }
 
-            AnimatedVisibility (
-                visible = isLoading,
-                enter = fadeIn(animationSpec = tween(durationMillis = 500)) + expandVertically(),
-                exit = fadeOut(animationSpec = tween(durationMillis = 500)) + shrinkVertically()
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
-                        color = Color.White,
-                        strokeWidth = 4.dp
-                    )
-                }
-            }
-
-            // Add check in enabled
-            if (selectedImage != null) {
+            if (state.selectedImage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    enabled = !isLoading && hasAnyFaces == true,
-                    onClick = {
-                        viewModel.inference()
-                    },
+                    enabled = !state.loading && hasAnyFaces == true,
+                    onClick = { viewModel.run() },
                 ) {
                     Text("Identify face")
-                }
-            }
 
-            if (blacklistResult != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                val (similarity, name) = blacklistResult!!
-                val isMatch = similarity >= settings.similarityThreshold
-                Text(
-                    "Is blacklist match: $isMatch",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    "Similarity: ${String.format("%.2f", similarity)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (isMatch) {
-                    Text(
-                        "Name: $name",
-                        style = MaterialTheme.typography.bodyMedium
+                    LoadingIndicator(
+                        isVisible = state.loading,
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
             }
 
-            if (whitelistResult != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                val (similarity, name) = whitelistResult!!
-                val isMatch = similarity >= settings.similarityThreshold
+            if (state.blacklistResult != null || state.whitelistResult != null) {
+                Spacer(Modifier.height(24.dp))
+                HorizontalDivider()
+                Spacer(Modifier.height(16.dp))
+
                 Text(
-                    "Is whitelist match: $isMatch",
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = "Results",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onSurface.copy(0.8f)
                 )
-                Text(
-                    "Similarity: ${String.format("%.2f", similarity)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (isMatch) {
-                    Text(
-                        "Name: $name",
-                        style = MaterialTheme.typography.bodyMedium
+                Spacer(Modifier.height(12.dp))
+
+                state.blacklistResult?.let { result ->
+                    FaceIdResultCard(
+                        title = "Blacklist",
+                        isMatch = result.isMatch,
+                        similarity = result.similarity,
+                        name = result.name
                     )
                 }
-            }
 
-
-            if (error != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text=error!!,
-                    color = MaterialTheme.colorScheme.error,
-                )
+                state.whitelistResult?.let { result ->
+                    if (state.blacklistResult != null) {
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    FaceIdResultCard(
+                        title = "Whitelist",
+                        isMatch = result.isMatch,
+                        similarity = result.similarity,
+                        name = result.name
+                    )
+                }
             }
         }
     }

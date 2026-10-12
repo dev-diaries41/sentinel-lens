@@ -8,10 +8,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Scaffold
@@ -24,21 +27,48 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.faces.Face
+import com.fpf.sentinellens.navigation.TopBarState
+import com.fpf.sentinellens.surveillance.Face
+import com.fpf.sentinellens.ui.components.watchlist.WatchlistItemCard
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
 fun WatchlistScreen(
-    viewModel: WatchlistViewModel = viewModel(),
-    onNavigate: (String?) -> Unit,
+    viewModel: WatchlistViewModel = koinViewModel(),
+    onTopBarChange: (TopBarState) -> Unit,
+    onManagePerson: (Long?) -> Unit,
+    onViewLogs: () -> Unit,
+    onTestSurveillance: () -> Unit
 ) {
     val faceList by viewModel.faceList.collectAsState(emptyList())
     val listState = rememberLazyListState()
     var selectedFace by remember { mutableStateOf<Face?>(null) }
     var isDeleteAlertVisible by remember { mutableStateOf(false) }
+    val title = stringResource(R.string.title_watchlist)
 
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = title,
+                actions = {
+                    IconButton(onClick = onViewLogs) {
+                        Icon(
+                            Icons.Filled.Description,
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(onClick = onTestSurveillance) {
+                        Icon(
+                            Icons.Filled.Science,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        )
+    }
     if(isDeleteAlertVisible && selectedFace != null){
         AlertDialog(
             onDismissRequest = { },
@@ -67,7 +97,7 @@ fun WatchlistScreen(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNavigate(null) },
+                onClick = { onManagePerson(null) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 shape = shapes.extraLarge
             ) {
@@ -98,11 +128,11 @@ fun WatchlistScreen(
                     ) { item ->
                         WatchlistItemCard(
                             data = item,
-                            onEdit = {onNavigate(item.id)},
+                            onEdit = { onManagePerson(item.id) },
                             onDelete = {
                                 isDeleteAlertVisible = true
                                 selectedFace = item
-                                       },
+                            },
                         )
                     }
                 }

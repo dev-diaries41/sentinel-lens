@@ -1,5 +1,6 @@
 package com.fpf.sentinellens.ui.components
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,6 +28,7 @@ import kotlinx.coroutines.withContext
 fun ImageUploader(
     imageUri: Uri?,
     onImageSelected: (Uri?) -> Unit,
+    withBoxes: Bitmap? = null
     ) {
     val context = LocalContext.current
 
@@ -72,7 +74,7 @@ fun ImageUploader(
             ) {
                 if (imageBitmap != null) {
                     Image(
-                        bitmap = imageBitmap!!,
+                        bitmap = withBoxes?.asImageBitmap()?: imageBitmap!!,
                         contentDescription = "Uploaded Image",
                         modifier = Modifier.fillMaxSize(),
                     )

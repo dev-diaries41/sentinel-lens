@@ -1,3 +1,17 @@
+## v1.0.3 – 12/10/2026
+
+### Added
+* Added support for recording audio.
+* Added Koin for DI
+
+### Changed
+
+* Improve UI
+* Improve code structure
+* Migrated data
+
+___
+
 ## v1.0.2 – 01/10/2025
 
 ### Added
@@ -18,6 +32,10 @@
 - Fixed incorrect inclusion of name in alerts when whitelist mode selected
 - Fixed false negatives in whitelist mode
 
+___
+
 ## v1.0.0 – 18/04/2025
 
 Initial release
+
+___

@@ -1,44 +1,90 @@
 package com.fpf.sentinellens.ui.components
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import com.fpf.sentinellens.lib.DEFAULT_IMAGE_DISPLAY_SIZE
-import com.fpf.sentinellens.lib.loadBitmapFromLocalUri
-import com.fpf.sentinellens.lib.loadBitmapFromUri
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.request.crossfade
 
 @Composable
 fun ImageDisplay(
-    modifier: Modifier = Modifier,
     uri: Uri,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
-    maxSize: Int = DEFAULT_IMAGE_DISPLAY_SIZE
-) {
+    size:Int? = 512,
+    onSizeChanged: ((Int, Int) -> Unit)? = null,
+    onError: ((error:  AsyncImagePainter.State.Error)-> Unit)? = null
+    ) {
     val context = LocalContext.current
 
-    val bitmapState = produceState<Bitmap?>(initialValue = null, key1 = uri) {
-        value = if(uri.scheme == "file") loadBitmapFromLocalUri(uri, maxSize) else loadBitmapFromUri(context, uri, maxSize)
+    val request = remember(uri, size) {
+        val builder = ImageRequest.Builder(context)
+            .allowHardware(true)
+            .crossfade(true)
+            .data(uri)
+
+        if (size != null) {
+            builder.size(size)
+        }
+
+        builder.build()
     }
 
-    val bitmap = bitmapState.value
-    if (bitmap != null) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = null,
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center) {
+
+        AsyncImage(
+            model = request,
+            contentDescription = "Displayed image",
             contentScale = contentScale,
-            modifier = modifier
+            modifier = Modifier.matchParentSize(),
+            onError = { onError?.invoke(it) },
+            onSuccess = {
+                onSizeChanged?.invoke(
+                    it.result.image.width,
+                    it.result.image.height
+                )
+            }
         )
-    } else {
-        Box(modifier = modifier.background(Color.Gray))
     }
 }
+
+@Composable
+fun ImageDisplay(
+    bitmap: Bitmap,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
+    onSizeChanged: ((Int, Int) -> Unit)? = null,
+    onError: ((error:  AsyncImagePainter.State.Error)-> Unit)? = null
+) {
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center) {
+
+        AsyncImage(
+            model = bitmap,
+            contentDescription = "Displayed image",
+            contentScale = contentScale,
+            modifier = Modifier.matchParentSize(),
+            onError = { onError?.invoke(it) },
+            onSuccess = {
+                onSizeChanged?.invoke(
+                    it.result.image.width,
+                    it.result.image.height
+                )
+            }
+        )
+    }
+}
+

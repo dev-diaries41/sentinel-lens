@@ -9,28 +9,48 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.fpf.sentinellens.R
-import com.fpf.sentinellens.data.logs.DetectionLogEntity
-import com.fpf.sentinellens.lib.toDateString
+import com.fpf.sentinellens.navigation.TopBarState
+import com.fpf.sentinellens.ui.components.logs.DetectionLogCard
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DetectionLogScreen(viewModel: DetectionLogViewModel = viewModel()) {
+fun DetectionLogScreen(
+    viewModel: DetectionLogViewModel = koinViewModel(),
+    onTopBarChange: (TopBarState) -> Unit,
+    onBack: () -> Unit,
+) {
     val items by viewModel.log.collectAsState(emptyList())
     val isClearLogsAlertVisible by viewModel.isClearLogsAlertVisible.collectAsState()
+    val title = stringResource(R.string.title_log)
 
+    LaunchedEffect(Unit) {
+        onTopBarChange(
+            TopBarState(
+                title = title,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        )
+    }
     if ( isClearLogsAlertVisible) {
         AlertDialog(
             onDismissRequest = { },
@@ -77,61 +97,12 @@ fun DetectionLogScreen(viewModel: DetectionLogViewModel = viewModel()) {
                         items = items,
                         key = { it.id }
                     ) { item ->
-                        DetectionLogItemCard(data = item)
+                        DetectionLogCard(data = item)
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-fun DetectionLogItemCard(data: DetectionLogEntity) {
-    Card(
-        elevation = CardDefaults.cardElevation(4.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            verticalAlignment = Alignment.Top
-        ) {
-            Icon(
-                imageVector = Icons.Default.Description,
-                contentDescription = "Log icon",
-                modifier = Modifier.padding(end = 16.dp).size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = "Detection Log",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(text = toDateString(data.date),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
-                    )
-                }
-
-                Text(text = "Person detected: ${data.name ?: "Unknown"}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
-                )
-                Text(text = "Similarity: ${"%.2f".format(data.similarity)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
-                )
-                Text(text = "Detection type: ${data.type}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.8f).padding(bottom = 4.dp)
-                )
-            }
-        }
-    }
-
 }
 
 @Composable

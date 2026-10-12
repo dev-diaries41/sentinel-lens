@@ -1,132 +1,74 @@
 package com.fpf.sentinellens.ui.screens.settings
 
 import android.app.Application
-import android.hardware.camera2.CameraCharacteristics
-import android.util.Log
+import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
-import com.fpf.sentinellens.data.faces.*
-import com.fpf.sentinellens.lib.Storage
+import com.fpf.sentinellens.settings.AppSettings
+import com.fpf.sentinellens.settings.loadSettings
+import com.fpf.sentinellens.settings.saveSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
 
-val frameIntervalOptions = mapOf(
-    1000L to "1 second",
-    2000L to "2 seconds",
-    5000L to "5 seconds",
-    10_000L to "10 seconds"
-)
-
-val maxDurationOptions = mapOf(
-    60_000L to "1 minute",
-    30 * 60_000L to "30 minutes",
-    60 * 60_000L to "1 hour",
-    6 * 60 * 60_000L to "6 hours",
-    12 * 60 * 60_000L to "12 hours",
-    24 * 60 * 60_000L to "1 day",
-    null to "No limit"
-)
-
-val alertFrequencyOptions = mapOf(
-    60_000L to "1 minute",
-    5 * 60_000L to "5 minutes",
-    15 * 60_000L to "15 minutes",
-    30 * 60_000L to "30 minutes",
-    60 * 60_000L to "1 hour",
-)
-
-val cameraOptions = mapOf(
-    CameraCharacteristics.LENS_FACING_FRONT to "Front",
-    CameraCharacteristics.LENS_FACING_BACK to "Back",
-)
-
-@Serializable
-data class AppSettings(
-    val similarityThreshold: Float = 0.52f,
-    val mode: FaceType = FaceType.BLACKLIST,
-    val frameInterval: Long = 1000L,
-    val alertFrequency: Long = 60_000L,
-    val maxDuration: Long? = null,
-    val cameraType: Int = CameraCharacteristics.LENS_FACING_BACK,
-    val telegramChannelId: String = "",
-    val telegramBotToken: String = ""
-    )
-
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-    private val storage = Storage.getInstance(getApplication())
+class SettingsViewModel(
+    application: Application,
+    private val sharedPrefs: SharedPreferences,
+) : AndroidViewModel(application) {
     private val _appSettings = MutableStateFlow(AppSettings())
     val appSettings: StateFlow<AppSettings> = _appSettings
 
     init {
-        loadSettings()
+        _appSettings.value = loadSettings(sharedPrefs)
     }
 
-    fun updateSimilarityThreshold(threshold: Float) {
+    fun onAction(action: SettingAction) = when(action){
+        is SettingAction.UpdateAlertFrequency -> updateAlertFrequency(action.frequency)
+        is SettingAction.UpdateCameraType -> updateCameraType(action.type)
+        is SettingAction.UpdateFrameInterval -> updateFrameInterval(action.interval)
+        is SettingAction.UpdateMaxDuration -> updateMaxDuration(action.duration)
+        is SettingAction.UpdateSimilarityThreshold -> updateSimilarityThreshold(action.threshold)
+        is SettingAction.UpdateTelegramBotToken -> updateTelegramBotToken(action.token)
+        is SettingAction.UpdateTelegramChannelId -> updateTelegramChannelId(action.channelId)
+    }
+
+    private fun updateSimilarityThreshold(threshold: Float) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(similarityThreshold = threshold)
-        saveSettings()
+        saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateMode(mode: FaceType) {
-        val currentSettings = _appSettings.value
-        _appSettings.value = currentSettings.copy(mode = mode)
-        saveSettings()
-    }
-
-    fun updateFrameInterval(interval: Long) {
+    private fun updateFrameInterval(interval: Long) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(frameInterval = interval)
-        saveSettings()
+        saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateMaxDuration(duration: Long?) {
+    private fun updateMaxDuration(duration: Long?) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(maxDuration = duration)
-        saveSettings()
+        saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateCameraType(type: Int) {
+    private fun updateCameraType(type: Int) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(cameraType = type)
-        saveSettings()
+        saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateAlertFrequency(duration: Long) {
+    private fun updateAlertFrequency(frequency: Long) {
         val currentSettings = _appSettings.value
-        _appSettings.value = currentSettings.copy(alertFrequency = duration)
-        saveSettings()
+        _appSettings.value = currentSettings.copy(alertFrequency = frequency)
+        saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateTelegramChannelId(channelId: String) {
+    private fun updateTelegramChannelId(channelId: String) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(telegramChannelId = channelId)
-        saveSettings()
+        saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateTelegramBotToken(token: String) {
+    private fun updateTelegramBotToken(token: String) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(telegramBotToken = token)
-        saveSettings()
-    }
-
-    private fun loadSettings() {
-        val jsonSettings = storage.getItem("app_settings")
-        _appSettings.value = if (jsonSettings != null) {
-            try {
-                Json.decodeFromString<AppSettings>(jsonSettings)
-            } catch (e: Exception) {
-                Log.e("Settings", "Failed to decode settings", e)
-                AppSettings()
-            }
-        } else {
-            AppSettings()
-        }
-    }
-
-    private fun saveSettings() {
-        val jsonSettings = Json.encodeToString(_appSettings.value)
-        storage.setItem("app_settings", jsonSettings)
+        saveSettings(sharedPrefs, _appSettings.value)
     }
 }
