@@ -1,14 +1,14 @@
 package com.fpf.sentinellens.data.logs
 
 import androidx.room.*
-
+import com.fpf.sentinellens.surveillance.FaceType
 
 @Entity(tableName = "detection_logs")
-data class DetectionLogEntity(
-    @PrimaryKey
-    val id: String,
+data class LogEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0L,
     val date: Long,
-    val type: String,
+    val type: FaceType,
     val name: String?,
     val similarity: Float
 )

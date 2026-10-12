@@ -1,15 +1,15 @@
-package com.fpf.sentinellens.data.logs
+package com.fpf.sentinellens.data.oldlogs
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface DetectionLogsDao {
+interface OldLogsDao {
     @Query("SELECT * FROM detection_logs ORDER BY date DESC")
-    fun getAllScanData(): Flow<List<DetectionLogEntity>>
+    fun getAllScanData(): Flow<List<OldLogEntity>>
 
     @Insert
-    suspend fun insert(log: DetectionLogEntity): Long
+    suspend fun insert(log: OldLogEntity): Long
 
     @Query("DELETE FROM detection_logs where id = :id")
     suspend fun delete(id: String)

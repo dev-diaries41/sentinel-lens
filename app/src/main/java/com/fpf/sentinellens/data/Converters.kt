@@ -1,4 +1,4 @@
-package com.fpf.sentinellens.data.faces
+package com.fpf.sentinellens.data
 
 import androidx.room.*
 import com.fpf.sentinellens.surveillance.FaceType
