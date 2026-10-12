@@ -44,13 +44,9 @@ fun TestFaceIdScreen(
 ) {
     val context = LocalContext.current
     val hasAnyFaces by viewModel.hasAnyFaces.collectAsState()
-    val selectedImage by viewModel.selectedImage.collectAsState()
-    val blacklistResult by viewModel.blacklistResult.collectAsState()
-    val whitelistResult by viewModel.whitelistResult.collectAsState()
-    val isLoading by viewModel.loading.collectAsState()
+    val state by viewModel.state.collectAsState()
     val settings by appSettings.collectAsState()
     val scrollState = rememberScrollState()
-    val selectedImageBoundedBoxes by viewModel.selectedImageBoundedBoxes.collectAsState()
     val title = stringResource(R.string.title_face_id)
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -102,16 +98,16 @@ fun TestFaceIdScreen(
                     .clickable { imagePickerLauncher.launch("image/*") }
 //
             ) {
-                if (selectedImage != null) {
-                    if(selectedImageBoundedBoxes != null){
+                if (state.selectedImage != null) {
+                    if(state.selectedImageBoundedBoxes != null){
                         ImageDisplay(
-                            bitmap = selectedImageBoundedBoxes!!,
+                            bitmap = state.selectedImageBoundedBoxes!!,
                             modifier = Modifier.matchParentSize(),
                             contentScale = ContentScale.Crop
                         )
                     }else{
                         ImageDisplay(
-                            uri = selectedImage!!,
+                            uri = state.selectedImage!!,
                             modifier = Modifier.matchParentSize(),
                             contentScale = ContentScale.Crop
                         )
@@ -160,16 +156,16 @@ fun TestFaceIdScreen(
                     )
             }
 
-            if (selectedImage != null) {
+            if (state.selectedImage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    enabled = !isLoading && hasAnyFaces == true,
+                    enabled = !state.loading && hasAnyFaces == true,
                     onClick = { viewModel.run() },
                 ) {
                     Text("Identify face")
 
                     LoadingIndicator(
-                        isVisible = isLoading,
+                        isVisible = state.loading,
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(start = 8.dp)
@@ -177,7 +173,7 @@ fun TestFaceIdScreen(
                 }
             }
 
-            blacklistResult?.let{ result ->
+            state.blacklistResult?.let{ result ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     "Is blacklist match: ${result.isMatch}",
@@ -192,7 +188,7 @@ fun TestFaceIdScreen(
                 }
             }
 
-            whitelistResult?.let{ result ->
+            state.whitelistResult?.let{ result ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     "Is whitelist match: ${result.isMatch}",

@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fpf.sentinellens.data.faces.FacesRepository
+import com.fpf.sentinellens.surveillance.FaceIdResult
 import com.fpf.sentinellens.surveillance.FaceType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 
 class TestFaceIdViewModel(
     application: Application,
@@ -39,37 +41,18 @@ class TestFaceIdViewModel(
 
     val hasAnyFaces: StateFlow<Boolean?> = repository.hasAnyFaces.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    private val _blacklistResult = MutableStateFlow<FaceIdResult?>(null)
-    val blacklistResult: StateFlow<FaceIdResult?> = _blacklistResult
-
-    private val _whitelistResult = MutableStateFlow<FaceIdResult?>(null)
-    val whitelistResult: StateFlow<FaceIdResult?> = _whitelistResult
-
-    private val _selectedImage = MutableStateFlow<Uri?>(null)
-    val selectedImage: StateFlow<Uri?> = _selectedImage
-    private val _selectedImageBoundedBoxes = MutableStateFlow<Bitmap?>(null)
-
-    val selectedImageBoundedBoxes: StateFlow<Bitmap?> = _selectedImageBoundedBoxes
+    private val _state = MutableStateFlow(TestFaceIdState())
+    val state: StateFlow<TestFaceIdState> = _state
 
     private val _error = MutableSharedFlow<String>()
     val error = _error.asSharedFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _isLoading
+    fun updateImageUri(uri: Uri) = _state.update { it.copy(selectedImage = uri) }
 
-    fun updateImageUri(uri: Uri) {
-        _selectedImage.value = uri
-    }
-
-    fun reset() {
-        _blacklistResult.value = null
-        _whitelistResult.value = null
-        _selectedImage.value = null
-        _selectedImageBoundedBoxes.value = null
-    }
+    fun reset() = _state.update { TestFaceIdState() }
 
     fun run() {
-        _isLoading.value = true
+        _state.update { it.copy(loading = true) }
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -80,7 +63,7 @@ class TestFaceIdViewModel(
                     faceComparer.initialize()
                 }
                 val croppedFaces = mutableListOf<Bitmap>()
-                val uri = _selectedImage.value ?: return@launch
+                val uri = _state.value.selectedImage ?: return@launch
                 val bitmap = getBitmapFromUri(getApplication(), uri)
 
                 val (_, boxes) = faceDetector.detect(bitmap)
@@ -95,7 +78,7 @@ class TestFaceIdViewModel(
                 }
 
                 val drawnBoxes = drawBoxes(bitmap, boxes, Color.GREEN)
-                _selectedImageBoundedBoxes.emit(drawnBoxes)
+                _state.update { it.copy(selectedImageBoundedBoxes = drawnBoxes) }
 
                 val allImageEmbeddings = repository.getAllFacesSync()
                 val blacklist = allImageEmbeddings.filter{it.type == FaceType.BLACKLIST }
@@ -111,7 +94,7 @@ class TestFaceIdViewModel(
                         name=name,
                         similarity = sim
                     )
-                    _blacklistResult.emit(result)
+                    _state.update { it.copy(blacklistResult = result) }
                 }
 
                 if(whitelist.isNotEmpty()){
@@ -124,20 +107,14 @@ class TestFaceIdViewModel(
                         name=name,
                         similarity = sim
                     )
-                    _whitelistResult.emit(result)
+                    _state.update { it.copy(whitelistResult = result) }
                 }
             } catch (e: Exception) {
                 Log.e("FaceIdViewModel", "Inference failed: ${e.message}", e)
                 _error.emit("Error testing face id")
             }finally {
-                _isLoading.value = false
+                _state.update { it.copy(loading = false) }
             }
         }
     }
 }
-
-data class FaceIdResult(
-    val isMatch: Boolean,
-    val name: String,
-    val similarity: Float
-)
