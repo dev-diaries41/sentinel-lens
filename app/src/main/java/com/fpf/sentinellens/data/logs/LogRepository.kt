@@ -11,16 +11,13 @@ import kotlinx.coroutines.flow.map
 class LogRepository(private val dao: LogDao) {
     fun getLogsFlow(): Flow<List<DetectionLog>> = dao.getAllScanData().map { logs -> logs.map{it.toDomain()} }
 
-    suspend fun insert(log: NewDetectionLog): Int {
-        return dao.insert(log.toEntity()).toInt()
-    }
+    suspend fun insert(log: NewDetectionLog): Long = dao.insert(log.toEntity())
 
-    suspend fun delete(id: String) {
-        dao.delete(id)
-    }
+    suspend fun insert(logs: List<NewDetectionLog>): List<Long> = dao.insert(logs.map{it.toEntity()})
 
-    suspend fun clear(){
-        dao.deleteAll()
-    }
+    suspend fun delete(id: String) = dao.delete(id)
+
+    suspend fun clear()= dao.deleteAll()
+
 
 }

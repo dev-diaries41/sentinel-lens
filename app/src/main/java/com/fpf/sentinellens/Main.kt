@@ -38,6 +38,10 @@ fun MainScreen() {
     val mainViewModel: MainViewModel = koinViewModel()
     val isUpdatePopUpVisible by mainViewModel.isUpdatePopUpVisible.collectAsState()
 
+    LaunchedEffect(Unit) {
+        mainViewModel.prepareApp()
+    }
+
     if (isUpdatePopUpVisible) {
         UpdatePopUp(
             isVisible = true,

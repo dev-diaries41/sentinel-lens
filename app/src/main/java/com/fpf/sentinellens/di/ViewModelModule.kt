@@ -9,12 +9,15 @@ import com.fpf.sentinellens.ui.screens.watchlist.WatchlistViewModel
 import com.fpf.sentinellens.ui.screens.watchlist.person.AddPersonViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import kotlin.math.log
 
 val viewModelModule = module {
     viewModel {
         MainViewModel(
             application = get(),
-            sharedPrefs = get()
+            sharedPrefs = get(),
+            logRepository = get(),
+            facesRepository = get()
         )
     }
     viewModel {

@@ -11,6 +11,9 @@ interface OldLogsDao {
     @Insert
     suspend fun insert(log: OldLogEntity): Long
 
+    @Query("SELECT * FROM detection_logs ORDER BY date DESC")
+    fun getAllLogs(): List<OldLogEntity>
+
     @Query("DELETE FROM detection_logs where id = :id")
     suspend fun delete(id: String)
 

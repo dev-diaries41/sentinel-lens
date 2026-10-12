@@ -7,4 +7,7 @@ object PrefsNames {
 object PrefsKeys {
     const val SETTINGS = "app_settings" // for backward compatibility
     const val UPDATES = "UPDATES_KEY"
+
+    const val DATA_SYNC = "DATA_SYNC"
+
 }

@@ -24,6 +24,9 @@ interface FacesDao {
     @Update
     suspend fun update(face: FaceEntity)
 
+    @Update
+    suspend fun update(faces: List<FaceEntity>)
+
     @Query("DELETE FROM faces WHERE id = :id")
     suspend fun deleteById(id: Long): Int
 

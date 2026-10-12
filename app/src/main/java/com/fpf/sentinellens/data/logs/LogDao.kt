@@ -8,8 +8,11 @@ interface LogDao {
     @Query("SELECT * FROM detection_logs ORDER BY date DESC")
     fun getAllScanData(): Flow<List<LogEntity>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(log: LogEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(logs: List<LogEntity>): List<Long>
 
     @Query("DELETE FROM detection_logs where id = :id")
     suspend fun delete(id: String)
