@@ -13,7 +13,7 @@ interface FacesDao {
     fun hasAnyFaces(): Flow<Boolean>
 
     @Query("SELECT * FROM faces WHERE id=:id")
-    suspend fun getById(id: Long): FaceEntity
+    suspend fun getById(id: Long): FaceEntity?
 
     @Query("SELECT * FROM faces ORDER BY date DESC")
     suspend fun getAllFacesSync(): List<FaceEntity>

@@ -13,7 +13,7 @@ class FacesRepository(private val dao: FacesDao) {
 
     suspend fun getAllFacesSync(): List<Face> = dao.getAllFacesSync().map{it.toDomain()}
 
-    suspend fun getFace(id: Long): Face = dao.getById(id).toDomain()
+    suspend fun getFace(id: Long): Face? = dao.getById(id)?.toDomain()
 
     suspend fun insert(face: NewFace)  = dao.insert(face.toEntity())
 
