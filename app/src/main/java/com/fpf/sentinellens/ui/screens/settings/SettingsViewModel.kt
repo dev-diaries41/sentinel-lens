@@ -9,7 +9,6 @@ import com.fpf.sentinellens.settings.saveSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-
 class SettingsViewModel(
     application: Application,
     private val sharedPrefs: SharedPreferences,
@@ -21,43 +20,53 @@ class SettingsViewModel(
         _appSettings.value = loadSettings(sharedPrefs)
     }
 
-    fun updateSimilarityThreshold(threshold: Float) {
+    fun onAction(action: SettingAction) = when(action){
+        is SettingAction.UpdateAlertFrequency -> updateAlertFrequency(action.frequency)
+        is SettingAction.UpdateCameraType -> updateCameraType(action.type)
+        is SettingAction.UpdateFrameInterval -> updateFrameInterval(action.interval)
+        is SettingAction.UpdateMaxDuration -> updateMaxDuration(action.duration)
+        is SettingAction.UpdateSimilarityThreshold -> updateSimilarityThreshold(action.threshold)
+        is SettingAction.UpdateTelegramBotToken -> updateTelegramBotToken(action.token)
+        is SettingAction.UpdateTelegramChannelId -> updateTelegramChannelId(action.channelId)
+    }
+
+    private fun updateSimilarityThreshold(threshold: Float) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(similarityThreshold = threshold)
         saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateFrameInterval(interval: Long) {
+    private fun updateFrameInterval(interval: Long) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(frameInterval = interval)
         saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateMaxDuration(duration: Long?) {
+    private fun updateMaxDuration(duration: Long?) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(maxDuration = duration)
         saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateCameraType(type: Int) {
+    private fun updateCameraType(type: Int) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(cameraType = type)
         saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateAlertFrequency(duration: Long) {
+    private fun updateAlertFrequency(frequency: Long) {
         val currentSettings = _appSettings.value
-        _appSettings.value = currentSettings.copy(alertFrequency = duration)
+        _appSettings.value = currentSettings.copy(alertFrequency = frequency)
         saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateTelegramChannelId(channelId: String) {
+    private fun updateTelegramChannelId(channelId: String) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(telegramChannelId = channelId)
         saveSettings(sharedPrefs, _appSettings.value)
     }
 
-    fun updateTelegramBotToken(token: String) {
+    private fun updateTelegramBotToken(token: String) {
         val currentSettings = _appSettings.value
         _appSettings.value = currentSettings.copy(telegramBotToken = token)
         saveSettings(sharedPrefs, _appSettings.value)

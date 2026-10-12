@@ -189,7 +189,7 @@ fun SettingsScreen(
         options = cameraOptions,
         onClose = { isSelectingCameraType = false },
         onSelect = {
-            viewModel.updateCameraType(it)
+            viewModel.onAction(SettingAction.UpdateCameraType(it))
             isSelectingCameraType = false
         }
     )
@@ -200,7 +200,7 @@ fun SettingsScreen(
         options = maxDurationOptions,
         onClose = { isSelectingMaxDuration = false },
         onSelect = {
-            viewModel.updateMaxDuration(it)
+            viewModel.onAction(SettingAction.UpdateMaxDuration(it))
             isSelectingMaxDuration = false
         }
     )
@@ -212,7 +212,7 @@ fun SettingsScreen(
         options = alertFrequencyOptions,
         onClose = { isSelectingFrequency = false },
         onSelect = {
-            viewModel.updateAlertFrequency(it)
+            viewModel.onAction(SettingAction.UpdateAlertFrequency(it))
             isSelectingFrequency = false
         }
     )
@@ -224,7 +224,7 @@ fun SettingsScreen(
         options = frameIntervalOptions,
         onClose = { isSelectingFrameInterval = false },
         onSelect = {
-            viewModel.updateFrameInterval(it)
+            viewModel.onAction(SettingAction.UpdateFrameInterval(it))
             isSelectingFrameInterval = false
         }
     )

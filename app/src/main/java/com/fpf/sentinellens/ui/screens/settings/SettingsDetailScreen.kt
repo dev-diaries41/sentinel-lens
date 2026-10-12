@@ -65,9 +65,7 @@ fun SettingsDetailScreen(
                         minValue = 0f,
                         maxValue = 0.8f,
                         initialValue = appSettings.similarityThreshold,
-                        onValueChange = { value ->
-                            viewModel.updateSimilarityThreshold(value)
-                        },
+                        onValueChange = { viewModel.onAction(SettingAction.UpdateSimilarityThreshold(it)) },
                     )
                 }
 
@@ -75,7 +73,7 @@ fun SettingsDetailScreen(
                     TextInput(
                         label = "Channel ID",
                         value = appSettings.telegramChannelId,
-                        onValueChange = { viewModel.updateTelegramChannelId(it) } ,
+                        onValueChange = { viewModel.onAction(SettingAction.UpdateTelegramChannelId(it)) } ,
                         placeholder = { Text(text = "Enter Channel Id e.g @myChannel") }
                     )
 
@@ -84,7 +82,7 @@ fun SettingsDetailScreen(
                     TextInput(
                         label = "Bot token",
                         value = appSettings.telegramBotToken,
-                        onValueChange = { viewModel.updateTelegramBotToken(it) },
+                        onValueChange = { viewModel.onAction(SettingAction.UpdateTelegramBotToken(it)) } ,
                         placeholder = { Text(text = "Enter Bot Token") }
                     )
 
