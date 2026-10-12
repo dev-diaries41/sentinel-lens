@@ -111,7 +111,7 @@ fun TestFaceIdScreen(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "Similarity: ${String.format("%.2f", result.similarity)}",
+                    "Similarity: ${String.format("%.2f", result.similarity * 100)}%",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (result.isMatch) {
