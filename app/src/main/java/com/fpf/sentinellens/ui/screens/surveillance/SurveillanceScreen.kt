@@ -163,7 +163,7 @@ fun SurveillanceScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(vertical = 64.dp)
+                modifier = Modifier.padding(top = 64.dp, bottom = 16.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -186,7 +186,6 @@ fun SurveillanceScreen(
                     Text(
                         text = stringResource(R.string.surveillance_missing_camera_permission),
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(vertical=8.dp),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -194,14 +193,12 @@ fun SurveillanceScreen(
                     Text(
                         text = stringResource(R.string.surveillance_missing_record_permission),
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(vertical=8.dp),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 if (hasAnyFaces == false) {
                     Text(
                         text = stringResource(R.string.error_watchlist_not_setup_message),
-                        modifier = Modifier.padding(vertical=8.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -212,16 +209,14 @@ fun SurveillanceScreen(
                     textAlign = TextAlign.Center
                 )
             }
+            RecordButton(
+                isRecording = isSurveillanceActive,
+                enabled = isSurveillanceEnabled,
+                onClick = { if (isSurveillanceActive) viewModel.stopSurveillance() else viewModel.startSurveillance() },
+                modifier = Modifier
+                    .padding(bottom = 16.dp, top = 64.dp)
+            )
         }
-
-        RecordButton(
-            isRecording = isSurveillanceActive,
-            enabled = isSurveillanceEnabled,
-            onClick = { if (isSurveillanceActive) viewModel.stopSurveillance() else viewModel.startSurveillance() },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp)
-        )
     }
 
     OptionPicker(
