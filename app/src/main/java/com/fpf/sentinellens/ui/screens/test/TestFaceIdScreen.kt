@@ -176,7 +176,7 @@ fun TestFaceIdScreen(
             state.blacklistResult?.let{ result ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Is blacklist match: ${result.isMatch}",
+                    "Blacklist match: ${result.isMatch}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
@@ -191,7 +191,7 @@ fun TestFaceIdScreen(
             state.whitelistResult?.let{ result ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Is whitelist match: ${result.isMatch}",
+                    "Whitelist match: ${result.isMatch}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
