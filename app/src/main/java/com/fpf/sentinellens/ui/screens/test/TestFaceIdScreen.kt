@@ -165,7 +165,7 @@ fun TestFaceIdScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     enabled = !state.loading && hasAnyFaces == true,
-                    onClick = { viewModel.run() },
+                    onClick = { viewModel.run(settings.similarityThreshold) },
                 ) {
                     Text("Identify face")
 

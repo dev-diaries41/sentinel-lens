@@ -35,7 +35,6 @@ class TestFaceIdViewModel(
 ) : AndroidViewModel(application){
 
     companion object {
-        private const val MIN_SIMILARITY: Float = 0.51f
         private const val BOTTOM_SIM_RANGE = -1f
     }
 
@@ -51,7 +50,7 @@ class TestFaceIdViewModel(
 
     fun reset() = _state.update { TestFaceIdState() }
 
-    fun run() {
+    fun run(similarityThreshold: Float) {
         _state.update { it.copy(loading = true) }
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -90,7 +89,7 @@ class TestFaceIdViewModel(
                     val sim = blacklistSimilarities[bestBlacklistIndex]
                     val name = blacklist[bestBlacklistIndex].name
                     val result = FaceIdResult(
-                        isMatch = sim >= MIN_SIMILARITY,
+                        isMatch = sim >= similarityThreshold,
                         name=name,
                         similarity = sim
                     )
@@ -103,7 +102,7 @@ class TestFaceIdViewModel(
                     val sim = whitelistSimilarities[bestWhitelistIndex]
                     val name = whitelist[bestWhitelistIndex].name
                     val result = FaceIdResult(
-                        isMatch = sim >= MIN_SIMILARITY,
+                        isMatch = sim >= similarityThreshold,
                         name=name,
                         similarity = sim
                     )
